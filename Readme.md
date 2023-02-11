@@ -26,3 +26,5 @@ This api also help me learn how to use:
 ### POST /api/auth/otp/activate
 
 ### POST /api/auth/otp/validate
+
+Secu : https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135
