@@ -4,7 +4,10 @@ use actix_web::{get, App, HttpResponse, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use dotenvy::dotenv;
 use tracing_actix_web::TracingLogger;
-use utoipa::OpenApi;
+use utoipa::{
+    openapi::security::{Http, HttpAuthScheme, SecurityScheme},
+    Modify, OpenApi,
+};
 use utoipa_swagger_ui::SwaggerUi;
 
 mod helper;
@@ -28,6 +31,22 @@ async fn health() -> HttpResponse {
     HttpResponse::Ok().finish()
 }
 
+struct SecurityAddon;
+
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        let components = openapi.components.as_mut().unwrap(); // we can unwrap safely since there already is components registered.
+        components.add_security_scheme(
+            "access_token",
+            SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
+        );
+        components.add_security_scheme(
+            "refresh_token",
+            SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
+        )
+    }
+}
+
 #[derive(OpenApi)]
 #[openapi(
     tags(
@@ -39,7 +58,9 @@ async fn health() -> HttpResponse {
         health,
         hello,
     ),
-    components(schemas(model::user::User,)))
+    components(schemas(model::user::User,)),
+    modifiers(&SecurityAddon)
+)
     ]
 struct ApiDoc;
 
