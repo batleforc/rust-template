@@ -1,0 +1,27 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2021"
+authors = ["Batleforc"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "4"
+actix-cors = "0.6"
+utoipa = {version="3",features= ["actix_extras"] }
+utoipa-swagger-ui = { version = "3", features = ["actix-web"] }
+uuid = { version = "1.2.2", features = ["v4","serde"]}
+bcrypt = "0.14.0"
+serde = "1.0.152"
+dotenvy = "0.15.6"
+tracing = "0.1.37"
+tracing-actix-web = { version = "0.7.2", features = ["opentelemetry_0_18"]}
+opentelemetry = { version = "0.18", features = ["rt-tokio-current-thread"] }
+tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
+opentelemetry-jaeger = { version = "0.17.0" , features = ["rt-tokio-current-thread"]}
+tracing-bunyan-formatter = "0.3.6"
+tracing-opentelemetry = "0.18.0"
+actix-web-prom = "0.6.0"
+
+
