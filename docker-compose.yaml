@@ -16,3 +16,15 @@ services:
       - 14268:14268
       - 14269:14269
       - 9411:9411
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-rust-api
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
