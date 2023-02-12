@@ -1,8 +1,9 @@
 use crate::helper::tracing::init_telemetry;
 use actix_cors::Cors;
-use actix_web::{get, App, HttpResponse, HttpServer};
+use actix_web::{get, web, App, HttpResponse, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use dotenvy::dotenv;
+use tokio_postgres::NoTls;
 use tracing_actix_web::TracingLogger;
 use utoipa::{
     openapi::security::{Http, HttpAuthScheme, SecurityScheme},
@@ -71,6 +72,11 @@ async fn main() -> std::io::Result<()> {
         Err(_) => println!("No .env file found"),
     }
     init_telemetry("ApiRust");
+    let db_config = model::db::DbConfig::new();
+    let dbpool = db_config.pg.create_pool(None, NoTls).unwrap();
+
+    model::db::on_database_init(dbpool.clone()).await;
+
     let openapi = ApiDoc::openapi();
     let port: u16 = std::env::var("PORT")
         .unwrap_or_else(|_| "5437".to_string())
@@ -87,6 +93,7 @@ async fn main() -> std::io::Result<()> {
             .allow_any_method()
             .allow_any_header();
         App::new()
+            .app_data(web::Data::new(dbpool.clone()))
             .wrap(cors)
             .wrap(TracingLogger::default())
             .wrap(prometheus.clone())
