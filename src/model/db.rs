@@ -49,7 +49,12 @@ pub async fn on_database_init(pool: deadpool_postgres::Pool) {
         Err(e) => println!("Error installing extension uuid-ossp: {}", e),
     };
 
-    // @todo : Create a migration system
+    match super::user::User::create_table(pool.clone()).await {
+        Ok(_) => println!("Table users created"),
+        Err(e) => {
+            panic!("Error creating table users: {}", e);
+        }
+    }
 
     println!("Database initialized")
 }
