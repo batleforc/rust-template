@@ -24,6 +24,8 @@ What this api does:
 
 ## Auth Endpoint
 
+Secu : https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135
+
 ### POST /api/auth/login
 
 ### GET /api/auth/logout
@@ -38,4 +40,24 @@ What this api does:
 
 ### POST /api/auth/otp/validate
 
-Secu : https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135
+## User Endpoint
+
+### GET /api/user
+
+### GET /api/user/{id}
+
+### PUT /api/user
+
+### DELETE /api/user
+
+## Asset Endpoint
+
+### GET /api/asset/{id}/download
+
+### GET /api/asset/{id}
+
+### POST /api/asset
+
+### PUT /api/asset
+
+### DELETE /api/asset
