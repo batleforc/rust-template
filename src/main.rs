@@ -50,6 +50,16 @@ impl Modify for SecurityAddon {
 
 #[derive(OpenApi)]
 #[openapi(
+    info(
+        title = "Rust API",
+        version = "0.1.0",
+        description = "This is the API for the Rust API",
+        contact(
+            name = "Batleforc",
+            url = "https://weebo.fr",
+            email = "maxleriche.60@gmail.com"
+        ),
+    ),
     tags(
         (name = "Auth", description = "Authentification"),
         (name = "Health", description = "Health check"),
@@ -59,7 +69,11 @@ impl Modify for SecurityAddon {
         health,
         hello,
     ),
-    components(schemas(model::user::User,)),
+    components(
+        schemas(
+            model::user::User,
+        )
+    ),
     modifiers(&SecurityAddon)
 )
     ]
