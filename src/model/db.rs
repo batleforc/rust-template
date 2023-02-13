@@ -55,6 +55,12 @@ pub async fn on_database_init(pool: deadpool_postgres::Pool) {
             panic!("Error creating table users: {}", e);
         }
     }
+    match super::token::RefreshToken::create_table(pool.clone()).await {
+        Ok(_) => println!("Table refresh_tokens created"),
+        Err(e) => {
+            panic!("Error creating table refresh_tokens: {}", e);
+        }
+    }
 
     println!("Database initialized")
 }
