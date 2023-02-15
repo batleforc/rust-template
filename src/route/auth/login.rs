@@ -32,7 +32,10 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
     let body = login_body.into_inner();
     let pool: Pool = db_pool.into_inner().as_ref().clone();
     let user = match User::get_one_by_mail(pool, body.email.clone()).await {
-        Ok(user) => user,
+        Ok(user) => {
+            tracing::debug!(user = ?body.email.clone() ,"User found");
+            user
+        }
         Err(err) => {
             tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while getting user");
             return HttpResponse::Unauthorized().finish();
@@ -45,13 +48,17 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
                 tracing::error!(user = ?body.email.clone() ,"Invalid password");
                 return HttpResponse::Unauthorized().finish();
             }
+            tracing::debug!(user = ?body.email.clone() ,"Password validated");
         }
         Err(err) => {
             tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while validating password");
             return HttpResponse::Unauthorized().finish();
         }
     }
-    tracing::info!(user = body.email, "User logged in");
+    tracing::debug!(
+        user = body.email,
+        "User logged in, generating refresh_token"
+    );
 
     HttpResponse::Ok().finish()
 }
