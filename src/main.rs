@@ -13,6 +13,7 @@ use utoipa_swagger_ui::SwaggerUi;
 
 mod helper;
 mod model;
+mod route;
 
 /// This is the base endpoint for the API
 ///
@@ -68,10 +69,13 @@ impl Modify for SecurityAddon {
     paths(
         health,
         hello,
+        route::auth::login::login,
     ),
     components(
         schemas(
             model::user::User,
+            route::auth::login::LoginUser,
+            route::auth::login::LoginUserReturn,
         )
     ),
     modifiers(&SecurityAddon)
@@ -113,6 +117,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(prometheus.clone())
             .service(health)
             .service(hello)
+            .service(route::init::init_api())
             .service(SwaggerUi::new("/docs/{_:.*}").url("/docs/docs.json", openapi.clone()))
     })
     .bind(("0.0.0.0", port))?
