@@ -65,6 +65,32 @@ impl User {
         })
     }
 
+    pub async fn get_one_by_mail(
+        pool: deadpool_postgres::Pool,
+        email: String,
+    ) -> Result<User, tokio_postgres::Error> {
+        let client = pool.get().await.unwrap();
+
+        let get_one = "
+            SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled, created_at, updated_at
+            FROM users
+            WHERE email = $1";
+        let row = client.query_one(get_one, &[&email]).await?;
+
+        Ok(User {
+            id: row.get(0),
+            email: row.get(1),
+            password: row.get(2),
+            nom: row.get(3),
+            prenom: row.get(4),
+            otp_secret: row.get(5),
+            otp_url: row.get(6),
+            otp_enabled: row.get(7),
+            created_at: row.get(8),
+            updated_at: row.get(9),
+        })
+    }
+
     pub async fn create(self, pool: deadpool_postgres::Pool) -> Result<u64, Error> {
         let client = pool.get().await.unwrap();
 
@@ -88,7 +114,7 @@ impl User {
             )
             .await
     }
-    pub fn compare_password(&self, password: &str) -> Result<bool, bcrypt::BcryptError> {
+    pub fn compare_password(&self, password: String) -> Result<bool, bcrypt::BcryptError> {
         verify(password, &self.password)
     }
     pub fn hash_password(&mut self, password: &str) -> Option<bcrypt::BcryptError> {
