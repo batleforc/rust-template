@@ -109,6 +109,17 @@ impl RefreshToken {
         client.execute(create_table, &[]).await
     }
 
+    pub async fn create(self, pool: deadpool_postgres::Pool) -> Result<u64, tokio_postgres::Error> {
+        let client = pool.get().await.unwrap();
+
+        let create = "
+        INSERT INTO refresh_tokens (created_at, user_id, token)
+        VALUES ($1, $2, $3)";
+        client
+            .execute(create, &[&self.created_at, &self.user_id, &self.token])
+            .await
+    }
+
     pub async fn get_one_by_token(
         pool: deadpool_postgres::Pool,
         token: String,
