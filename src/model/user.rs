@@ -35,8 +35,8 @@ impl User {
                 otp_secret VARCHAR(255),
                 otp_url VARCHAR(255),
                 otp_enabled BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-                updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+                created_at TIMESTAMPZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPZ NOT NULL DEFAULT NOW()
             );";
         client.execute(create_table, &[]).await
     }
@@ -63,6 +63,21 @@ impl User {
             created_at: row.get(8),
             updated_at: row.get(9),
         })
+    }
+
+    // check if user exists
+    pub async fn exists(
+        pool: deadpool_postgres::Pool,
+        email: String,
+    ) -> Result<bool, tokio_postgres::Error> {
+        let client = pool.get().await.unwrap();
+
+        let get_one = "
+            SELECT id
+            FROM users
+            WHERE email = $1";
+        let row = client.query(get_one, &[&email]).await?;
+        Ok(row.len() > 0)
     }
 
     pub async fn get_one_by_mail(
@@ -117,7 +132,7 @@ impl User {
     pub fn compare_password(&self, password: String) -> Result<bool, bcrypt::BcryptError> {
         verify(password, &self.password)
     }
-    pub fn hash_password(&mut self, password: &str) -> Option<bcrypt::BcryptError> {
+    pub fn hash_password(&mut self, password: String) -> Option<bcrypt::BcryptError> {
         match hash(password, DEFAULT_COST) {
             Ok(hash) => {
                 self.password = hash;

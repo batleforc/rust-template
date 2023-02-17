@@ -148,11 +148,11 @@ impl RefreshToken {
         DELETE FROM refresh_tokens
         WHERE user_id = $1
         AND created_at < (
-          SELECT created_at
-          FROM refresh_tokens
-          WHERE user_id = $1
-          ORDER BY created_at DESC
-          LIMIT 1 OFFSET 3
+            SELECT created_at
+            FROM refresh_tokens
+            WHERE user_id = $1
+            ORDER BY created_at DESC
+            LIMIT 1 OFFSET 3
         )";
         client.execute(delete, &[&user_id]).await
     }
