@@ -70,12 +70,15 @@ impl Modify for SecurityAddon {
         health,
         hello,
         route::auth::login::login,
+        route::auth::register::register,
     ),
     components(
         schemas(
             model::user::User,
             route::auth::login::LoginUser,
             route::auth::login::LoginUserReturn,
+            route::auth::register::RegisterUser,
+            route::auth::register::RegisterUserReturn,
         )
     ),
     modifiers(&SecurityAddon)

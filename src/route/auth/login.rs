@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::model::{
-    token::{RefreshToken, TokenClaims},
+    token::{self, RefreshToken, TokenClaims},
     user::User,
 };
 
@@ -75,6 +75,16 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
         user_id: user.id,
         token: refresh_token.clone(),
     };
+
+    match token::RefreshToken::keep_only_four_token(pool.clone(), user.id).await {
+        Ok(_) => {
+            tracing::debug!(user = ?body.email.clone() ,"Successfully deleted old refresh token");
+        }
+        Err(err) => {
+            tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while deleting old token");
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
 
     match refresh_token_db.create(pool.clone()).await {
         Ok(_) => {
