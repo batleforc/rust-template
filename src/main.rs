@@ -71,6 +71,7 @@ impl Modify for SecurityAddon {
         hello,
         route::auth::login::login,
         route::auth::register::register,
+        route::auth::refresh::refresh,
     ),
     components(
         schemas(
@@ -79,6 +80,7 @@ impl Modify for SecurityAddon {
             route::auth::login::LoginUserReturn,
             route::auth::register::RegisterUser,
             route::auth::register::RegisterUserReturn,
+            route::auth::refresh::RefreshTokenReturn,
         )
     ),
     modifiers(&SecurityAddon)
