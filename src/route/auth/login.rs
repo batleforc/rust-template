@@ -21,6 +21,7 @@ pub struct LoginUserReturn {
     pub refresh_token: String,
 }
 
+/// Login user
 #[utoipa::path(
   tag = "Auth",
   request_body = LoginUser,
@@ -81,7 +82,7 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
         "User logged in, generating refresh_token"
     );
 
-    let refresh_token = match TokenClaims::new_tokens(user.id, true, None) {
+    let refresh_token = match TokenClaims::new_tokens(user.id, true) {
         Ok(token) => token,
         Err(err) => {
             tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while generating token");

@@ -11,23 +11,26 @@ pub struct TokenClaims {
     pub iat: usize,      // issued at
     pub iss: String,     // issuer
     pub refresh: bool,   // is refresh token
-    pub refresh_id: Option<uuid::Uuid>,
 }
 
 impl TokenClaims {
-    pub fn new_token_claims(
-        user_id: uuid::Uuid,
-        refresh: bool,
-        refresh_id: Option<uuid::Uuid>,
-    ) -> TokenClaims {
+    pub fn new_token_claims(user_id: uuid::Uuid, refresh: bool) -> TokenClaims {
+        let mut exp = chrono::Utc::now() + chrono::Duration::hours(1);
+        if refresh {
+            exp = chrono::Utc::now() + chrono::Duration::days(7);
+        }
         TokenClaims {
             sub: user_id,
-            exp: (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp() as usize,
+            exp: exp.timestamp() as usize,
             iat: chrono::Utc::now().timestamp() as usize,
             iss: "Rust_api".to_string(),
             refresh: refresh,
-            refresh_id: refresh_id,
         }
+    }
+    pub fn access_token(&mut self) {
+        self.exp = (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp() as usize;
+        self.iat = chrono::Utc::now().timestamp() as usize;
+        self.refresh = false;
     }
     fn new_header(refresh: bool) -> Header {
         let kid_key = if refresh {
@@ -54,16 +57,15 @@ impl TokenClaims {
             }
         }
     }
-    pub fn new_tokens(
-        user_id: uuid::Uuid,
-        refresh: bool,
-        refresh_id: Option<uuid::Uuid>,
-    ) -> Result<String, String> {
-        let claims = TokenClaims::new_token_claims(user_id, refresh, refresh_id);
-        let header = TokenClaims::new_header(refresh);
-        let key_string = TokenClaims::get_key(refresh);
+    pub fn new_tokens(user_id: uuid::Uuid, refresh: bool) -> Result<String, String> {
+        let mut claims = TokenClaims::new_token_claims(user_id, refresh);
+        claims.sign_token()
+    }
+    pub fn sign_token(&mut self) -> Result<String, String> {
+        let header = TokenClaims::new_header(self.refresh);
+        let key_string = TokenClaims::get_key(self.refresh);
         let key = key_string.as_bytes();
-        match encode(&header, &claims, &EncodingKey::from_secret(key)) {
+        match encode(&header, &self, &EncodingKey::from_secret(key)) {
             Ok(token) => Ok(token),
             Err(_) => Err("Error while creating token".to_string()),
         }
@@ -83,7 +85,7 @@ impl TokenClaims {
 
                 Ok(token_data.claims)
             }
-            Err(_) => Err("Error while validating token".to_string()),
+            Err(err) => Err(format!("Error while validating token {}", err)),
         }
     }
 }
