@@ -49,25 +49,25 @@ pub async fn register(
         let pool_swap = pool.clone();
         let body_swap = body.clone();
         if let Err(return_content) = async move{
-        match User::exists(pool_swap.clone(), body_swap.email.clone()).await {
-          Ok(exist) => {
-              if exist {
-                  tracing::error!(user = ?body_swap.email.clone() ,"User already exist");
-                  return Err(HttpResponse::BadRequest()
-                  .content_type(ContentType::plaintext())
-                  .body("User already exist"));
-              }
-              tracing::debug!(user = ?body_swap.email.clone() ,"User does not exist");
-              return Ok(());
-          }
-          Err(err) => {
-            tracing::error!(error = ?err,user = ?body_swap.email.clone(), code= ?err.as_db_error() ,"Error while getting user");
-            return Err(HttpResponse::BadRequest().finish());
-          }
+            match User::exists(pool_swap.clone(), body_swap.email.clone()).await {
+                Ok(exist) => {
+                    if exist {
+                        tracing::error!(user = ?body_swap.email.clone() ,"User already exist");
+                        return Err(HttpResponse::BadRequest()
+                            .content_type(ContentType::plaintext())
+                        .body("User already exist"));
+                    }
+                    tracing::debug!(user = ?body_swap.email.clone() ,"User does not exist");
+                    return Ok(());
+                }
+                Err(err) => {
+                    tracing::error!(error = ?err,user = ?body_swap.email.clone(), code= ?err.as_db_error() ,"Error while getting user");
+                    return Err(HttpResponse::BadRequest().finish());
+                }
+            }
+        }.instrument(check_user_span).await{
+            return return_content;
         }
-      }.instrument(check_user_span).await{
-        return return_content;
-      }
     }
 
     {
@@ -128,7 +128,7 @@ pub async fn register(
         let span =
             tracing::info_span!("Hash password (is meant to be slow  to prevent bruteforce)");
         if let Err(res_hash) =span.in_scope(|| -> Result<_, HttpResponse> {
-          if let Some(err) = user.hash_password(body.password.clone()) {
+            if let Some(err) = user.hash_password(body.password.clone()) {
             tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while hashing password");
             return Err(HttpResponse::BadRequest()
             .content_type(ContentType::plaintext())
@@ -136,7 +136,7 @@ pub async fn register(
         }
         return Ok(());
         }) {
-          return res_hash;
+            return res_hash;
         }
     }
 
@@ -151,12 +151,12 @@ pub async fn register(
                 .body("Error while creating user"));
         }
         return Ok(());
-      }
+        }
         .instrument(insert_user_span)
         .await
-      {
-          return err;
-      }
+        {
+            return err;
+        }
     }
 
     tracing::debug!(user = ?body.email.clone(), uid = ?id ,"User created");

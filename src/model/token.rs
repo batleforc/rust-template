@@ -101,9 +101,9 @@ impl RefreshToken {
 
         let create_table = "
       CREATE TABLE IF NOT EXISTS refresh_tokens (
-        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         user_id UUID NOT NULL,
-        token VARCHAR(255) NOT NULL,
+        token VARCHAR NOT NULL,
         PRIMARY KEY (user_id, token)
       );";
         client.execute(create_table, &[]).await

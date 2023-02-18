@@ -18,7 +18,7 @@ mod route;
 /// This is the base endpoint for the API
 ///
 /// This endpoint is used to check if the API is up and running
-#[utoipa::path(tag = "health")]
+#[utoipa::path(tag = "Health")]
 #[get("/")]
 async fn hello() -> &'static str {
     "Hello RustApi!"
@@ -27,7 +27,7 @@ async fn hello() -> &'static str {
 /// This is the health endpoint for the API
 ///
 /// This endpoint is used to provide a prometheus endpoint for the API, and output metrics
-#[utoipa::path(tag = "health")]
+#[utoipa::path(tag = "Health")]
 #[get("/metrics")]
 async fn health() -> HttpResponse {
     HttpResponse::Ok().finish()

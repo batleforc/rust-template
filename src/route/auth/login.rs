@@ -1,6 +1,7 @@
 use actix_web::{post, web, HttpResponse, Responder};
 use deadpool_postgres::Pool;
 use serde::{Deserialize, Serialize};
+use tracing::Instrument;
 use utoipa::ToSchema;
 
 use crate::model::{
@@ -8,7 +9,7 @@ use crate::model::{
     user::User,
 };
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Clone)]
 pub struct LoginUser {
     pub email: String,
     pub password: String,
@@ -33,28 +34,46 @@ pub struct LoginUserReturn {
 pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -> impl Responder {
     let body = login_body.into_inner();
     let pool: Pool = db_pool.into_inner().as_ref().clone();
-    let user = match User::get_one_by_mail(pool.clone(), body.email.clone()).await {
-        Ok(user) => {
-            tracing::debug!(user = ?body.email.clone() ,"User found");
-            user
-        }
-        Err(err) => {
-            tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while getting user");
-            return HttpResponse::Unauthorized().finish();
-        }
+    let check_user_span = tracing::info_span!("Check if user exist");
+    let user = match {
+        let pool_swap = pool.clone();
+        let body_swap = body.clone();
+        async move {
+            match User::get_one_by_mail(pool_swap.clone(), body_swap.email.clone()).await {
+                Ok(user) => {
+                    tracing::debug!(user = ?body_swap.email.clone() ,"User found");
+                    Ok(user)
+                }
+                Err(err) => {
+                    tracing::error!(error = ?err,user = ?body_swap.email.clone() ,"Error while getting user");
+                    return Err(HttpResponse::Unauthorized().finish());
+                }
+            }
+        }.instrument(check_user_span)
+    }.await {
+        Ok(user) => user,
+        Err(err) => return err,
     };
 
-    match user.compare_password(body.password.clone()) {
-        Ok(valid) => {
-            if !valid {
-                tracing::error!(user = ?body.email.clone() ,"Invalid password");
-                return HttpResponse::Unauthorized().finish();
+    {
+        let valid_password_span = tracing::info_span!("Check if password is valid");
+        if let Err(err_response)=valid_password_span.in_scope(|| -> Result<_,HttpResponse> {
+            match user.compare_password(body.password.clone()) {
+                Ok(valid) => {
+                    if !valid {
+                        tracing::error!(user = ?body.email.clone() ,"Invalid password");
+                        return Err(HttpResponse::Unauthorized().finish());
+                    }
+                    tracing::debug!(user = ?body.email.clone() ,"Password validated");
+                    return Ok(());
+                }
+                Err(err) => {
+                    tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while validating password");
+                    return Err(HttpResponse::Unauthorized().finish());
+                }
             }
-            tracing::debug!(user = ?body.email.clone() ,"Password validated");
-        }
-        Err(err) => {
-            tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while validating password");
-            return HttpResponse::Unauthorized().finish();
+        }){
+            return err_response;
         }
     }
     tracing::debug!(
@@ -76,23 +95,43 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
         token: refresh_token.clone(),
     };
 
-    match token::RefreshToken::keep_only_four_token(pool.clone(), user.id).await {
-        Ok(_) => {
-            tracing::debug!(user = ?body.email.clone() ,"Successfully deleted old refresh token");
-        }
-        Err(err) => {
-            tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while deleting old token");
-            return HttpResponse::InternalServerError().finish();
+    {
+        let pool_swap = pool.clone();
+        let body_swap = body.clone();
+        let delete_old_token_span = tracing::info_span!("Delete old refresh token");
+        if let Err(err_response) = async move{
+            match token::RefreshToken::keep_only_four_token(pool_swap, user.id).await {
+                Ok(_) => {
+                    tracing::debug!(user = ?body_swap.email.clone() ,"Successfully deleted old refresh token");
+                    Ok(())
+                }
+                Err(err) => {
+                    tracing::error!(error = ?err,user = ?body_swap.email.clone() ,"Error while deleting old token");
+                    Err(HttpResponse::InternalServerError().finish())
+                }
+            }
+        }.instrument(delete_old_token_span).await{
+            return err_response;
         }
     }
 
-    match refresh_token_db.create(pool.clone()).await {
-        Ok(_) => {
-            tracing::debug!(user = ?body.email.clone() ,"Refresh token saved to db");
-        }
-        Err(err) => {
-            tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while saving refresh token to db");
-            return HttpResponse::InternalServerError().finish();
+    {
+        let pool_swap = pool.clone();
+        let body_swap = body.clone();
+        let insert_new_token_span = tracing::info_span!("Insert new refresh token");
+        if let Err(err_response) = async move{
+            match refresh_token_db.create(pool_swap.clone()).await {
+                Ok(_) => {
+                    tracing::debug!(user = ?body_swap.email.clone() ,"Refresh token saved to db");
+                    Ok(())
+                }
+                Err(err) => {
+                    tracing::error!(error = ?err,user = ?body_swap.email.clone() ,"Error while saving refresh token to db");
+                    return Err(HttpResponse::InternalServerError().finish());
+                }
+            }
+        }.instrument(insert_new_token_span).await{
+            return err_response;
         }
     }
 
