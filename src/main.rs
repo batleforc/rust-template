@@ -73,6 +73,7 @@ impl Modify for SecurityAddon {
         route::auth::register::register,
         route::auth::refresh::refresh,
         route::auth::logout::logout,
+        route::user::current_user::get_current_user,
     ),
     components(
         schemas(
