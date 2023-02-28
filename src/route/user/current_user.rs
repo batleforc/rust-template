@@ -7,7 +7,7 @@ use actix_web::{get, web, HttpResponse, Responder};
 #[utoipa::path(
   tag = "User",
   operation_id = "getuser",
-  path = "/api/user/{id}",
+  path = "/api/user",
   responses(
       (status = 200, description = "User", body = User),
       (status = 400, description = "Error message"),
@@ -20,8 +20,8 @@ use actix_web::{get, web, HttpResponse, Responder};
     ("access_token" = [])
   )
 )]
-#[get("/{id}")]
-pub async fn get_current_user(user: User, uid_user: web::Path<uuid::Uuid>) -> impl Responder {
+#[get("")]
+pub async fn get_current_user(user: User) -> impl Responder {
     tracing::debug!(user = ?user.email ,"User found");
     HttpResponse::Ok().json(user)
 }
