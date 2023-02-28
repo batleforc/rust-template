@@ -1,5 +1,5 @@
 use crate::model::user::User;
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{get, HttpResponse, Responder};
 
 /// Get current user
 ///
