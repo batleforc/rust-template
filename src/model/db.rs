@@ -1,3 +1,5 @@
+use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
+
 pub struct DbConfig {
     pub host: String,
     pub port: u16,
@@ -24,6 +26,7 @@ impl DbConfig {
             user: Some(user.clone()),
             password: Some(password.clone()),
             dbname: Some(database.clone()),
+            ssl_mode: Some(deadpool_postgres::SslMode::Prefer),
             ..Default::default()
         };
 
@@ -35,6 +38,27 @@ impl DbConfig {
             database,
             pg,
         }
+    }
+
+    pub fn get_tls_connector() -> Option<postgres_openssl::MakeTlsConnector> {
+        let tls_mode = std::env::var("DB_TLS")
+            .unwrap_or_else(|_| "true".to_string())
+            .parse::<bool>()
+            .unwrap();
+        if !tls_mode {
+            return None;
+        }
+        let verify_cert = std::env::var("DB_VERIFY_CERT")
+            .unwrap_or_else(|_| "false".to_string())
+            .parse::<bool>()
+            .unwrap();
+        let mut builder = SslConnector::builder(SslMethod::tls()).unwrap();
+        if !verify_cert {
+            builder.set_verify(SslVerifyMode::NONE);
+        }
+
+        let connector = postgres_openssl::MakeTlsConnector::new(builder.build());
+        Some(connector)
     }
 }
 

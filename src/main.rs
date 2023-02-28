@@ -78,6 +78,7 @@ impl Modify for SecurityAddon {
     components(
         schemas(
             model::user::User,
+            model::user::PublicUser,
             route::auth::login::LoginUser,
             route::auth::login::LoginUserReturn,
             route::auth::register::RegisterUser,
@@ -98,7 +99,10 @@ async fn main() -> std::io::Result<()> {
     }
     init_telemetry("ApiRust");
     let db_config = model::db::DbConfig::new();
-    let dbpool = db_config.pg.create_pool(None, NoTls).unwrap();
+    let dbpool = match model::db::DbConfig::get_tls_connector() {
+        Some(connector) => db_config.pg.create_pool(None, connector).unwrap(),
+        None => db_config.pg.create_pool(None, NoTls).unwrap(),
+    };
 
     model::db::on_database_init(dbpool.clone()).await;
 

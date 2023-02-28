@@ -5,3 +5,7 @@ use super::current_user;
 pub fn init_user() -> Scope {
     web::scope("/user").service(current_user::get_current_user)
 }
+
+// @todo Add delete user
+// @todo Add update user
+// @todo Get user by id (public version)

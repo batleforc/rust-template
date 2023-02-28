@@ -10,6 +10,13 @@ use uuid::Uuid;
 use crate::{helper::header, model::token::TokenClaims};
 
 #[derive(ToSchema, Clone, Serialize, Deserialize)]
+pub struct PublicUser {
+    pub id: Uuid,
+    pub nom: String,
+    pub prenom: String,
+}
+
+#[derive(ToSchema, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: Uuid,
     pub email: String,
@@ -144,6 +151,13 @@ impl User {
                 None
             }
             Err(e) => Some(e),
+        }
+    }
+    pub fn to_public_user(&self) -> PublicUser {
+        PublicUser {
+            id: self.id,
+            nom: self.nom.clone(),
+            prenom: self.prenom.clone(),
         }
     }
 }
