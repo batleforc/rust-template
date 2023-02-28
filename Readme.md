@@ -24,7 +24,7 @@ What this api does:
 
 ## Auth Endpoint
 
-Secu : https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135
+Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135>
 
 ### POST /api/auth/login : DONE
 
