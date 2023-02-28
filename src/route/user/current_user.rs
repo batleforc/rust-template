@@ -1,17 +1,5 @@
-use actix_web::{get, HttpResponse, Responder};
-use serde::{Deserialize, Serialize};
-
-use utoipa::ToSchema;
-
 use crate::model::user::User;
-
-#[derive(Serialize, Deserialize, ToSchema)]
-pub struct RegisterUserReturn {
-    pub created: bool,
-    pub email: String,
-    pub nom: String,
-    pub prenom: String,
-}
+use actix_web::{get, web, HttpResponse, Responder};
 
 /// Get current user
 ///
@@ -19,18 +7,21 @@ pub struct RegisterUserReturn {
 #[utoipa::path(
   tag = "User",
   operation_id = "getuser",
-  path = "/api/user",
+  path = "/api/user/{id}",
   responses(
       (status = 200, description = "User", body = User),
       (status = 400, description = "Error message"),
       (status = 500, description = "Internal server error"),
   ),
+  params(
+    ("id" = uuid, Path, description = "Id de l'utilisateur"),
+  ),
   security(
     ("access_token" = [])
   )
 )]
-#[get("")]
-pub async fn get_current_user(user: User) -> impl Responder {
+#[get("/{id}")]
+pub async fn get_current_user(user: User, uid_user: web::Path<uuid::Uuid>) -> impl Responder {
     tracing::debug!(user = ?user.email ,"User found");
     HttpResponse::Ok().json(user)
 }

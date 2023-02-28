@@ -26,13 +26,13 @@ What this api does:
 
 Secu : https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135
 
-### POST /api/auth/login
+### POST /api/auth/login : DONE
 
-### GET /api/auth/logout
+### GET /api/auth/logout : DONE
 
-### POST /api/auth/register
+### POST /api/auth/register : DONE
 
-### GET /api/auth/refresh
+### GET /api/auth/refresh : DONE
 
 ### GET /api/auth/otp/generate
 
@@ -42,7 +42,7 @@ Secu : https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo
 
 ## User Endpoint
 
-### GET /api/user
+### GET /api/user : DONE
 
 ### GET /api/user/{id}
 
@@ -61,3 +61,10 @@ Secu : https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo
 ### PUT /api/asset
 
 ### DELETE /api/asset
+
+## Pre-requisites
+
+- Rust
+- OpenSSL
+- Make
+- Docker (for the database and the tracing/metrics)
