@@ -13,9 +13,6 @@ use actix_web::{get, HttpResponse, Responder};
       (status = 400, description = "Error message"),
       (status = 500, description = "Internal server error"),
   ),
-  params(
-    ("id" = uuid, Path, description = "Id de l'utilisateur"),
-  ),
   security(
     ("access_token" = [])
   )

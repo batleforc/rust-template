@@ -44,11 +44,11 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 ### GET /api/user : DONE
 
-### GET /api/user/{id}
+### GET /api/user/{id} : DONE
 
 ### PUT /api/user
 
-### DELETE /api/user
+### DELETE /api/user : DONE
 
 ## Asset Endpoint
 
@@ -68,3 +68,7 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 - OpenSSL
 - Make
 - Docker (for the database and the tracing/metrics)
+
+## Test de charge
+
+https://github.com/fcsonline/drill

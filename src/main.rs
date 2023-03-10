@@ -75,6 +75,7 @@ impl Modify for SecurityAddon {
         route::auth::logout::logout,
         route::user::current_user::get_current_user,
         route::user::get_one_user::get_one_user,
+        route::user::delete_user::delete_user,
     ),
     components(
         schemas(
@@ -98,7 +99,13 @@ async fn main() -> std::io::Result<()> {
         Ok(_) => println!("Loaded .env file"),
         Err(_) => println!("No .env file found"),
     }
-    init_telemetry("ApiRust");
+    init_telemetry(
+        format!(
+            "ApiRust-{}",
+            std::env::var("RUST_ENV").unwrap_or_else(|_| "production".to_string())
+        )
+        .as_str(),
+    );
     let db_config = model::db::DbConfig::new();
     let dbpool = match model::db::DbConfig::get_tls_connector() {
         Some(connector) => db_config.pg.create_pool(None, connector).unwrap(),

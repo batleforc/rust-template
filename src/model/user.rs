@@ -141,6 +141,16 @@ impl User {
             )
             .await
     }
+    pub async fn delete(self, pool: deadpool_postgres::Pool) -> Result<u64, Error> {
+        let client = pool.get().await.unwrap();
+
+        let delete_user = "DELETE user where id = $1";
+        let delete_token = "DELETE refresh_tokens where user_id = $1";
+        if let Err(err) = client.execute(delete_user, &[&self.id]).await {
+            return Err(err);
+        }
+        client.execute(delete_token, &[&self.id]).await
+    }
     pub fn compare_password(&self, password: String) -> Result<bool, bcrypt::BcryptError> {
         verify(password, &self.password)
     }
