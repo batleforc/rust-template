@@ -5,10 +5,10 @@ MACOS_TARGET=x86_64-apple-darwin
 run_api:
 	@cargo run
 
-run_docker:
+up_docker:
 	@docker-compose up -d
 
-run: run_docker run_api
+run: run_docker up_api
 
 
 stop_docker:
