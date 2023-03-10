@@ -29,7 +29,7 @@ pub async fn delete_user(user: User, db_pool: web::Data<Pool>) -> impl Responder
             let user_copy = user.clone();
             match user.delete(pool.clone()).await {
                 Ok(edit) => {
-                    tracing::debug!(user = ?user_copy.email,nbr_edit= ?edit ,"User found");
+                    tracing::debug!(user = ?user_copy.email,nbr_edit= ?edit ,"User and token deleted");
                     Ok(edit)
                 }
                 Err(err) => {

@@ -144,8 +144,8 @@ impl User {
     pub async fn delete(self, pool: deadpool_postgres::Pool) -> Result<u64, Error> {
         let client = pool.get().await.unwrap();
 
-        let delete_user = "DELETE user where id = $1";
-        let delete_token = "DELETE refresh_tokens where user_id = $1";
+        let delete_user = "DELETE FROM users where id = $1";
+        let delete_token = "DELETE FROM refresh_tokens where user_id = $1";
         if let Err(err) = client.execute(delete_user, &[&self.id]).await {
             return Err(err);
         }
