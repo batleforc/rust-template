@@ -6,10 +6,21 @@ run_api:
 	@cargo run
 
 up_docker:
-	@docker-compose up -d
+	@docker-compose up jaeger postgres -d
 
 run: run_docker up_api
 
+test: test_docker test_api test_docker_stop
+
+test_docker:
+	@docker-compose stop postgres
+	@docker-compose up jaeger test-postgres -d
+
+test_docker_stop:
+	@docker-compose rm test-postgres -f -s
+
+test_api:
+	@cargo test
 
 stop_docker:
 	@docker-compose down
