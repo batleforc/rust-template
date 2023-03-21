@@ -46,7 +46,7 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 ### GET /api/user/{id} : DONE
 
-### PUT /api/user
+### PUT /api/user : DONE
 
 ### DELETE /api/user : DONE
 
