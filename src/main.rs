@@ -54,7 +54,7 @@ impl Modify for SecurityAddon {
     info(
         title = "Rust API",
         version = "0.1.0",
-        description = "This is the API for the Rust API",
+        description = "This is the template for the Rust API",
         contact(
             name = "Batleforc",
             url = "https://weebo.fr",
@@ -76,11 +76,13 @@ impl Modify for SecurityAddon {
         route::user::current_user::get_current_user,
         route::user::get_one_user::get_one_user,
         route::user::delete_user::delete_user,
+        route::user::update_user::update_user,
     ),
     components(
         schemas(
             model::user::User,
             model::user::PublicUser,
+            model::user::UserUpdate,
             route::auth::login::LoginUser,
             route::auth::login::LoginUserReturn,
             route::auth::register::RegisterUser,

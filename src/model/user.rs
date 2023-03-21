@@ -17,6 +17,12 @@ pub struct PublicUser {
 }
 
 #[derive(ToSchema, Clone, Serialize, Deserialize)]
+pub struct UserUpdate {
+    pub nom: Option<String>,
+    pub prenom: Option<String>,
+}
+
+#[derive(ToSchema, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: Uuid,
     pub email: String,
@@ -151,6 +157,21 @@ impl User {
         }
         client.execute(delete_token, &[&self.id]).await
     }
+
+    pub async fn update_name_surname(self, pool: deadpool_postgres::Pool) -> Result<u64, Error> {
+        let client = pool.get().await.unwrap();
+        let update = "
+            UPDATE users
+            SET nom = $1, prenom = $2, updated_at = $3
+            WHERE id = $4";
+        client
+            .execute(
+                update,
+                &[&self.nom, &self.prenom, &chrono::Utc::now(), &self.id],
+            )
+            .await
+    }
+
     pub fn compare_password(&self, password: String) -> Result<bool, bcrypt::BcryptError> {
         verify(password, &self.password)
     }
