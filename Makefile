@@ -8,7 +8,7 @@ run_api:
 up_docker:
 	@docker-compose up jaeger postgres -d
 
-run: run_docker up_api
+run: up_docker run_api
 
 test: test_docker test_api test_docker_stop
 

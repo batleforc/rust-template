@@ -10,6 +10,12 @@ use crate::model::{
 };
 
 #[derive(Serialize, Deserialize, ToSchema, Clone)]
+pub enum LoginStatus {
+    OtpStep,
+    RefreshStep,
+}
+
+#[derive(Serialize, Deserialize, ToSchema, Clone)]
 pub struct LoginUser {
     pub email: String,
     pub password: String,
@@ -17,8 +23,9 @@ pub struct LoginUser {
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct LoginUserReturn {
-    pub user: User,
-    pub refresh_token: String,
+    pub user: Option<User>,
+    pub status: LoginStatus,
+    pub refresh_token: Option<String>,
 }
 
 /// Login user
@@ -137,7 +144,8 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
     }
 
     HttpResponse::Ok().json(LoginUserReturn {
-        user,
-        refresh_token: refresh_token,
+        user: Some(user),
+        status: LoginStatus::RefreshStep,
+        refresh_token: Some(refresh_token),
     })
 }

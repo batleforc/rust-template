@@ -1,4 +1,5 @@
 use crate::helper::tracing::init_telemetry;
+use crate::route::auth::otp::generate;
 use actix_cors::Cors;
 use actix_web::{get, web, App, HttpResponse, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
@@ -63,6 +64,7 @@ impl Modify for SecurityAddon {
     ),
     tags(
         (name = "Auth", description = "Authentification"),
+        (name = "Auth>Otp", description = "Authentification>Otp"),
         (name = "Health", description = "Health check"),
         (name = "User", description = "User management")
     ),
@@ -77,14 +79,17 @@ impl Modify for SecurityAddon {
         route::user::get_one_user::get_one_user,
         route::user::delete_user::delete_user,
         route::user::update_user::update_user,
+        generate::generate_otp,
     ),
     components(
         schemas(
             model::user::User,
             model::user::PublicUser,
             model::user::UserUpdate,
+            generate::GenOtp,
             route::auth::login::LoginUser,
             route::auth::login::LoginUserReturn,
+            route::auth::login::LoginStatus,
             route::auth::register::RegisterUser,
             route::auth::register::RegisterUserReturn,
             route::auth::refresh::RefreshTokenReturn,
@@ -101,13 +106,10 @@ async fn main() -> std::io::Result<()> {
         Ok(_) => println!("Loaded .env file"),
         Err(_) => println!("No .env file found"),
     }
-    init_telemetry(
-        format!(
-            "ApiRust-{}",
-            std::env::var("RUST_ENV").unwrap_or_else(|_| "production".to_string())
-        )
-        .as_str(),
-    );
+    let rust_env = std::env::var("RUST_ENV").unwrap_or_else(|_| "production".to_string());
+    let app_name = format!("ApiRust-{}", rust_env);
+    std::env::set_var("APP_NAME", app_name.clone());
+    init_telemetry(app_name.as_str());
     let db_config = model::db::DbConfig::new();
     let dbpool = match model::db::DbConfig::get_tls_connector() {
         Some(connector) => db_config.pg.create_pool(None, connector).unwrap(),
