@@ -1,4 +1,5 @@
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
+//use tokio_postgres::NoTls;
 
 pub struct DbConfig {
     pub host: String,
@@ -88,3 +89,32 @@ pub async fn on_database_init(pool: deadpool_postgres::Pool) {
 
     println!("Database initialized")
 }
+
+// pub async fn on_database_wipe(pool: deadpool_postgres::Pool) {
+//     let client = pool.get().await.unwrap();
+
+//     match client.execute("DROP TABLE IF EXISTS users", &[]).await {
+//         Ok(_) => println!("Table users dropped"),
+//         Err(e) => println!("Error dropping table users: {}", e),
+//     };
+//     match client
+//         .execute("DROP TABLE IF EXISTS refresh_tokens", &[])
+//         .await
+//     {
+//         Ok(_) => println!("Table refresh_tokens dropped"),
+//         Err(e) => println!("Error dropping table refresh_tokens: {}", e),
+//     };
+// }
+
+// pub async fn get_test_database() -> deadpool_postgres::Pool {
+//     let host = std::env::var("DB_PORT_TEST").unwrap_or_else(|_| "5433".to_string());
+//     std::env::set_var("DB_PORT", host);
+//     let config = DbConfig::new();
+//     let dbpool = match DbConfig::get_tls_connector() {
+//         Some(connector) => config.pg.create_pool(None, connector).unwrap(),
+//         None => config.pg.create_pool(None, NoTls).unwrap(),
+//     };
+//     on_database_wipe(dbpool.clone()).await;
+//     on_database_init(dbpool.clone()).await;
+//     dbpool
+// }

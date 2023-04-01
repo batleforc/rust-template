@@ -26,7 +26,7 @@ What this api does:
 
 Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135>
 
-### POST /api/auth/login : DONE
+### POST /api/auth/login => Include the otp code if the user has activated it
 
 ### GET /api/auth/logout : DONE
 
@@ -34,11 +34,13 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 ### GET /api/auth/refresh : DONE
 
-### GET /api/auth/otp/generate
+### GET /api/auth/otp/activate => Gen QRCODE string
 
-### POST /api/auth/otp/activate
+### POST /api/auth/otp/activate => Activate the otp
 
-### POST /api/auth/otp/validate
+### POST /api/auth/otp/validate => Validate the otp (2FA login)
+
+<https://crates.io/crates/totp-rs>
 
 ## User Endpoint
 

@@ -1,8 +1,11 @@
+use std::env::var;
+
 use actix_web::{error::ErrorUnauthorized, web, FromRequest, HttpResponse};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use deadpool_postgres::Pool;
 use serde::{Deserialize, Serialize};
 use tokio_postgres::Error;
+use totp_rs::TotpUrlError;
 use tracing::Instrument;
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -172,6 +175,31 @@ impl User {
             .await
     }
 
+    pub async fn update_otp_secret_url_enabled(
+        &self,
+        pool: deadpool_postgres::Pool,
+    ) -> Result<u64, Error> {
+        let client = pool.get().await.unwrap();
+        let update = "
+            UPDATE users
+            SET otp_secret = $1, otp_url = $2, otp_enabled = $3, updated_at = $4
+            WHERE id = $5";
+        client
+            .execute(
+                update,
+                &[
+                    &self.otp_secret,
+                    &self.otp_url,
+                    &self.otp_enabled,
+                    &chrono::Utc::now(),
+                    &self.id,
+                ],
+            )
+            .await
+    }
+}
+
+impl User {
     pub fn compare_password(&self, password: String) -> Result<bool, bcrypt::BcryptError> {
         verify(password, &self.password)
     }
@@ -189,6 +217,55 @@ impl User {
             id: self.id,
             nom: self.nom.clone(),
             prenom: self.prenom.clone(),
+        }
+    }
+
+    pub fn gen_otp_secret(&mut self) {
+        let secret = totp_rs::Secret::generate_secret();
+        let secret_byte = match secret.to_bytes() {
+            Ok(s) => s,
+            Err(err) => {
+                println!("{:?}", err);
+                return;
+            }
+        };
+        let totp_object = totp_rs::TOTP::new(
+            totp_rs::Algorithm::SHA1,
+            6,
+            1,
+            30,
+            secret_byte,
+            Some(var("APP_NAME").unwrap()),
+            self.email.clone(),
+        )
+        .unwrap();
+        self.otp_secret = Some(totp_object.get_secret_base32());
+    }
+
+    pub fn get_totp_obj(&self) -> Result<totp_rs::TOTP, TotpUrlError> {
+        let secret = totp_rs::Secret::Encoded(self.otp_secret.clone().unwrap());
+        let secret_byte = match secret.to_bytes() {
+            Ok(s) => s,
+            Err(err) => {
+                return Err(TotpUrlError::Secret(format!("{:?}", err)));
+            }
+        };
+        totp_rs::TOTP::new(
+            totp_rs::Algorithm::SHA1,
+            6,
+            1,
+            30,
+            secret_byte,
+            Some(var("APP_NAME").unwrap()),
+            self.email.clone(),
+        )
+    }
+
+    pub fn validate_otp(&self, otp: String) -> bool {
+        let totp = self.get_totp_obj().unwrap();
+        match totp.check_current(&otp) {
+            Ok(_) => true,
+            Err(_) => false,
         }
     }
 }
