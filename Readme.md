@@ -34,9 +34,9 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 ### GET /api/auth/refresh : DONE
 
-### GET /api/auth/otp/activate => Gen QRCODE string
+### GET /api/auth/otp/activate => Gen QRCODE string : DONE
 
-### POST /api/auth/otp/activate => Activate the otp
+### POST /api/auth/otp/activate => Activate the otp : IN PROGRESS
 
 ### POST /api/auth/otp/validate => Validate the otp (2FA login)
 
