@@ -10,7 +10,10 @@ use tracing::Instrument;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::{helper::header, model::token::TokenClaims};
+use crate::{
+    helper::{self, header},
+    model::token::TokenClaims,
+};
 
 #[derive(ToSchema, Clone, Serialize, Deserialize)]
 pub struct PublicUser {
@@ -132,6 +135,33 @@ impl User {
         })
     }
 
+    pub async fn get_one_by_one_time_token(
+        pool: deadpool_postgres::Pool,
+        token: String,
+    ) -> Result<User, tokio_postgres::Error> {
+        let client = pool.get().await.unwrap();
+
+        let get_one = "
+            SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled,one_time_token, created_at, updated_at
+            FROM users
+            WHERE one_time_token = $1";
+        let row = client.query_one(get_one, &[&token]).await?;
+
+        Ok(User {
+            id: row.get(0),
+            email: row.get(1),
+            password: row.get(2),
+            nom: row.get(3),
+            prenom: row.get(4),
+            otp_secret: row.get(5),
+            otp_url: row.get(6),
+            otp_enabled: row.get(7),
+            one_time_token: row.get(8),
+            created_at: row.get(9),
+            updated_at: row.get(10),
+        })
+    }
+
     pub async fn create(self, pool: deadpool_postgres::Pool) -> Result<u64, Error> {
         let client = pool.get().await.unwrap();
 
@@ -180,15 +210,15 @@ impl User {
             .await
     }
 
-    pub async fn update_otp_secret_url_enabled(
+    pub async fn update_otp_secret_url_token_enabled(
         &self,
         pool: deadpool_postgres::Pool,
     ) -> Result<u64, Error> {
         let client = pool.get().await.unwrap();
         let update = "
             UPDATE users
-            SET otp_secret = $1, otp_url = $2, otp_enabled = $3, updated_at = $4
-            WHERE id = $5";
+            SET otp_secret = $1, otp_url = $2, otp_enabled = $3, updated_at = $4, one_time_token = $5
+            WHERE id = $6";
         client
             .execute(
                 update,
@@ -197,6 +227,7 @@ impl User {
                     &self.otp_url,
                     &self.otp_enabled,
                     &chrono::Utc::now(),
+                    &self.one_time_token,
                     &self.id,
                 ],
             )
@@ -217,6 +248,11 @@ impl User {
             Err(e) => Some(e),
         }
     }
+    pub fn gen_one_time_token(&mut self) {
+        let token = format!("{}_{}", helper::string::generate_random_string(6), self.id);
+        self.one_time_token = Some(token);
+    }
+
     pub fn to_public_user(&self) -> PublicUser {
         PublicUser {
             id: self.id,

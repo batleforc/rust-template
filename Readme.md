@@ -26,7 +26,7 @@ What this api does:
 
 Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135>
 
-### POST /api/auth/login => Include the otp code if the user has activated it
+### POST /api/auth/login => Include the otp code if the user has activated it : DONE
 
 ### GET /api/auth/logout : DONE
 
@@ -40,9 +40,11 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 ### POST /api/auth/otp/activate => Activate the otp : Done
 
-### POST /api/auth/otp/validate => Validate the otp (2FA login)
+### POST /api/auth/otp/validate => Validate the otp (2FA login) : DONE
 
 <https://crates.io/crates/totp-rs>
+
+<https://qoomon.github.io/otp-authenticator-webapp/>
 
 ## User Endpoint
 

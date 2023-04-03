@@ -23,9 +23,11 @@ pub struct LoginUser {
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct LoginUserReturn {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub user: Option<User>,
     pub status: LoginStatus,
-    pub refresh_token: Option<String>,
+    pub token: Option<String>,
 }
 
 /// Login user
@@ -62,7 +64,6 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
         Ok(user) => user,
         Err(err) => return err,
     };
-
     {
         let valid_password_span = tracing::info_span!("Check if password is valid");
         if let Err(err_response)=valid_password_span.in_scope(|| -> Result<_,HttpResponse> {
@@ -84,6 +85,41 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
             return err_response;
         }
     }
+
+    if user.otp_enabled {
+        tracing::debug!(user = body.email, "User has otp enabled, sending otp");
+        let mut user = user;
+        tracing::debug!(user = body.email, "One time token generated");
+        user.gen_one_time_token();
+        let token = user.one_time_token.clone();
+
+        {
+            let pool_swap = pool.clone();
+            let body_swap = body.clone();
+            let save_new_one_time_token_span = tracing::info_span!("Save new one time token");
+            if let Err(err_response) = async move{
+                match user.update_otp_secret_url_token_enabled(pool_swap).await {
+                    Ok(_) => {
+                        tracing::debug!(user = ?body_swap.email.clone() ,"Successfuly saved one time token");
+                        Ok(())
+                    }
+                    Err(err) => {
+                        tracing::error!(error = ?err,user = ?body_swap.email.clone() ,"Error while saving one time token");
+                        Err(HttpResponse::InternalServerError().finish())
+                    }
+                }
+            }.instrument(save_new_one_time_token_span).await{
+                return err_response;
+            }
+        }
+
+        return HttpResponse::Ok().json(LoginUserReturn {
+            status: LoginStatus::OtpStep,
+            user: None,
+            token,
+        });
+    }
+
     tracing::debug!(
         user = body.email,
         "User logged in, generating refresh_token"
@@ -146,6 +182,6 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
     HttpResponse::Ok().json(LoginUserReturn {
         user: Some(user),
         status: LoginStatus::RefreshStep,
-        refresh_token: Some(refresh_token),
+        token: Some(refresh_token),
     })
 }
