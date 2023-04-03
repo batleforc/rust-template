@@ -34,9 +34,11 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 ### GET /api/auth/refresh : DONE
 
+### GET /api/auth/logout-all
+
 ### GET /api/auth/otp/activate => Gen QRCODE string : DONE
 
-### POST /api/auth/otp/activate => Activate the otp : IN PROGRESS
+### POST /api/auth/otp/activate => Activate the otp : Done
 
 ### POST /api/auth/otp/validate => Validate the otp (2FA login)
 
@@ -73,4 +75,4 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 ## Test de charge
 
-https://github.com/fcsonline/drill
+<https://github.com/fcsonline/drill>

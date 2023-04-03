@@ -1,23 +1,23 @@
 use crate::model::user::User;
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{post, web, HttpResponse, Responder};
 use deadpool_postgres::Pool;
 use serde::{Deserialize, Serialize};
 use tracing::Instrument;
 use utoipa::ToSchema;
 
-#[derive(Deserialize, Serialize, ToSchema, Clone)]
-pub struct GenOtp {
-    pub url: String,
-    pub qr_code: String,
+#[derive(Serialize, Deserialize, ToSchema, Clone)]
+pub struct ActivateOtp {
+    pub otp_code: String,
 }
 
-/// Start the totp activate process
+/// End the totp activate process
 #[utoipa::path(
   tag = "Auth>Otp",
-  operation_id = "generate",
+  request_body = ActivateOtp,
+  operation_id = "activate",
   path = "/api/auth/otp/activate",
   responses(
-      (status = 200, description = "QrCode", body = GenOtp),
+      (status = 200, description = "Success"),
       (status = 400, description = "Bad request"),
       (status = 500, description = "Internal server error"),
   ),
@@ -25,22 +25,32 @@ pub struct GenOtp {
     ("access_token" = [])
   )
 )]
-#[get("/activate")]
-pub async fn generate_otp(mut user: User, db_pool: web::Data<Pool>) -> impl Responder {
-    tracing::debug!(user = ?user.email ,"User found, starting otp generation");
+#[post("/activate")]
+pub async fn activate_otp(
+    mut user: User,
+    db_pool: web::Data<Pool>,
+    activate_otp: web::Json<ActivateOtp>,
+) -> impl Responder {
+    tracing::debug!(user = ?user.email ,"User found, starting otp final activation");
     if user.otp_enabled {
         tracing::debug!(user = ?user.email ,"User already has otp enabled");
         return HttpResponse::BadRequest().finish();
     }
-    user.gen_otp_secret();
-    let otp_object = match user.get_totp_obj() {
-        Ok(otp) => otp,
+    let body = activate_otp.into_inner();
+    match user.validate_otp(body.otp_code) {
+        Ok(status) => {
+            if !status {
+                tracing::debug!(user = ?user.email ,"User otp code is invalid");
+                return HttpResponse::BadRequest().finish();
+            }
+        }
         Err(err) => {
-            tracing::error!(error = ?err,user = ?user.email ,"Error while getting totp user");
+            tracing::error!(error = ?err,user = ?user.email ,"Error while validating otp");
             return HttpResponse::InternalServerError().finish();
         }
-    };
-    user.otp_url = Some(otp_object.get_url());
+    }
+
+    user.otp_enabled = true;
     let update_otp_span = tracing::info_span!("Update user otp");
     match {
         let pool_swap = db_pool.into_inner().as_ref().clone();
@@ -62,8 +72,5 @@ pub async fn generate_otp(mut user: User, db_pool: web::Data<Pool>) -> impl Resp
         Err(err) => return err,
     }
 
-    HttpResponse::Ok().json(GenOtp {
-        url: otp_object.get_url(),
-        qr_code: otp_object.get_qr().unwrap(),
-    })
+    HttpResponse::Ok().body("")
 }
