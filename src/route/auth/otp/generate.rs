@@ -46,7 +46,7 @@ pub async fn generate_otp(mut user: User, db_pool: web::Data<Pool>) -> impl Resp
         let pool_swap = db_pool.into_inner().as_ref().clone();
         let user_swap = user.clone();
         async move {
-            match user_swap.update_otp_secret_url_enabled(pool_swap.clone()).await {
+            match user_swap.update_otp_secret_url_token_enabled(pool_swap.clone()).await {
                 Ok(_) => {
                     tracing::debug!(user = ?user_swap.email ,"User otp updated");
                     Ok(())

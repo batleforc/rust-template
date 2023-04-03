@@ -288,6 +288,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry-jaeger",
  "postgres-openssl",
+ "rand",
  "regex",
  "serde",
  "serde_json",

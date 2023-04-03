@@ -1,5 +1,5 @@
 use crate::helper::tracing::init_telemetry;
-use crate::route::auth::otp::{activate, generate};
+use crate::route::auth::otp::{activate, generate, validate};
 use actix_cors::Cors;
 use actix_web::dev::Service as _;
 use actix_web::http::header;
@@ -83,6 +83,7 @@ impl Modify for SecurityAddon {
         route::user::update_user::update_user,
         generate::generate_otp,
         activate::activate_otp,
+        validate::validate_otp,
     ),
     components(
         schemas(
@@ -91,6 +92,7 @@ impl Modify for SecurityAddon {
             model::user::UserUpdate,
             generate::GenOtp,
             activate::ActivateOtp,
+            validate::ValidateOtp,
             route::auth::login::LoginUser,
             route::auth::login::LoginUserReturn,
             route::auth::login::LoginStatus,

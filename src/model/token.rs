@@ -24,7 +24,7 @@ impl TokenClaims {
             exp: exp.timestamp() as usize,
             iat: chrono::Utc::now().timestamp() as usize,
             iss: "Rust_api".to_string(),
-            refresh: refresh,
+            refresh,
         }
     }
     pub fn access_token(&mut self) {
