@@ -1,11 +1,13 @@
 use crate::helper::tracing::init_telemetry;
-use crate::route::auth::otp::generate;
+use crate::route::auth::otp::{activate, generate};
 use actix_cors::Cors;
+use actix_web::dev::Service as _;
+use actix_web::http::header;
 use actix_web::{get, web, App, HttpResponse, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use dotenvy::dotenv;
 use tokio_postgres::NoTls;
-use tracing_actix_web::TracingLogger;
+use tracing_actix_web::{RequestId, TracingLogger};
 use utoipa::{
     openapi::security::{Http, HttpAuthScheme, SecurityScheme},
     Modify, OpenApi,
@@ -80,6 +82,7 @@ impl Modify for SecurityAddon {
         route::user::delete_user::delete_user,
         route::user::update_user::update_user,
         generate::generate_otp,
+        activate::activate_otp,
     ),
     components(
         schemas(
@@ -87,6 +90,7 @@ impl Modify for SecurityAddon {
             model::user::PublicUser,
             model::user::UserUpdate,
             generate::GenOtp,
+            activate::ActivateOtp,
             route::auth::login::LoginUser,
             route::auth::login::LoginUserReturn,
             route::auth::login::LoginStatus,
@@ -135,6 +139,21 @@ async fn main() -> std::io::Result<()> {
             .allow_any_header();
         App::new()
             .app_data(web::Data::new(dbpool.clone()))
+            .wrap_fn(|mut req, srv| {
+                let request_id_asc = req.extract::<RequestId>();
+                let fut = srv.call(req);
+                async move {
+                    let mut res = fut.await?;
+                    let request_id = request_id_asc.await.unwrap();
+                    let request_id_str = format!("{}", request_id);
+                    let headers = res.headers_mut();
+                    headers.insert(
+                        header::HeaderName::from_static("x-request-id"),
+                        header::HeaderValue::from_str(request_id_str.as_str()).unwrap(),
+                    );
+                    Ok(res)
+                }
+            })
             .wrap(cors)
             .wrap(TracingLogger::default())
             .wrap(prometheus.clone())

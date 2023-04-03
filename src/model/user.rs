@@ -1,4 +1,4 @@
-use std::env::var;
+use std::{env::var, time::SystemTimeError};
 
 use actix_web::{error::ErrorUnauthorized, web, FromRequest, HttpResponse};
 use bcrypt::{hash, verify, DEFAULT_COST};
@@ -266,12 +266,9 @@ impl User {
         )
     }
 
-    pub fn validate_otp(&self, otp: String) -> bool {
+    pub fn validate_otp(&self, otp: String) -> Result<bool, SystemTimeError> {
         let totp = self.get_totp_obj().unwrap();
-        match totp.check_current(&otp) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        return totp.check_current(&otp);
     }
 }
 
