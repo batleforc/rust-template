@@ -9,18 +9,17 @@ This api also help me learn how to use:
 - tracing/metrics/open telemetry
 - Prometheus
 - swagger
-- Otp
-- actix-web deeper (middleware, guards, etc)
-- Rate limiting
+- Otp (with rust, already done in golang)
+- actix-web deeper (middleware, guards, wrap, etc)
 
 What this api does:
 
 - Auth module (Login,Logout,Register,Refresh(token), Otp)
 - User module (Read,Update,Delete) the create is done by the auth module
-- Asset module (CRUD) though S3 (minio)
 - Expose a swagger doc
 - Expose Metrics and Tracing
 - Handle Postgres
+- And some more handsome stuff
 
 ## Auth Endpoint
 
@@ -67,6 +66,35 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 ### PUT /api/asset
 
 ### DELETE /api/asset
+
+## TODO
+
+- [ ] Create a container for the api
+- [ ] Create a helm chart
+- [ ] Integrate the CI/CD pipeline
+- [ ] Add support for OIDC
+- [ ] Create a vue3 template with model auto generation
+- [ ] Integrate the api with S3 (asset endpoint)
+- [ ] Make the code more KISS (Keep it simple stupid)
+
+### TODO : Kiss
+
+- [ ] Factorize the login and validate_otp (refresh token handling)
+
+### TODO : Ci/Cd
+
+- [ ] Sonarqube
+- [ ] Dependency check
+- [ ] Build the docker image and push it to the registry (handle the multi env)
+- [ ] Deploy the helm chart (handle the multi env)
+
+### TODO : OIDC
+
+- [ ] Enable/Disable OIDC
+- [ ] Add the OIDC config in the helm chart
+- [ ] Add endpoint to authenticate user with OIDC
+- [ ] Handle case where the user log for the first time
+- [ ] Handle case where the email is already used
 
 ## Pre-requisites
 
