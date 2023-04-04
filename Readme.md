@@ -76,6 +76,7 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 - [ ] Create a vue3 template with model auto generation
 - [ ] Integrate the api with S3 (asset endpoint)
 - [ ] Make the code more KISS (Keep it simple stupid)
+- [ ] WRITE SOME TESTS
 
 ### TODO : Kiss
 
