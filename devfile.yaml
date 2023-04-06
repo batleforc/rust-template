@@ -81,7 +81,7 @@ components:
           exposure: internal
       volumeMounts:
         - name: postgresql-volume
-          path: /var/lib/postgresql/data/pgdata
+          path: /var/lib/postgresql/data
   - name: cargo-volume
     volume:
       size: 2Gi
