@@ -74,6 +74,15 @@ components:
         - name: postgres
           targetPort: 5432
           exposure: none
+  - name: cargo
+    volume:
+      size: 2Gi
+  - name: rustup
+    volume:
+      size: 2Gi
+  - name: rust
+    volume:
+      size: 2Gi
 commands:
   - id: build
     exec:
