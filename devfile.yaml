@@ -30,6 +30,9 @@ components:
       image: rust:1.68.0
       memoryLimit: 512Mi
       mountSources: true
+      sourceMapping: /projects
+      command: ["tail"]
+      args: ["-f", "/dev/null"]
       endpoints:
         - name: "rust"
           targetPort: 5437
@@ -59,7 +62,26 @@ components:
           path: /usr/local/rustup
         - name: rust-volume
           path: /usr/local/rust
-
+  - name: postgres
+    container:
+      image: postgres:15
+      memoryLimit: 512Mi
+      env:
+        - name: postgres_user
+          value: "{{ pgsql_user }}"
+        - name: postgres_password
+          value: "{{ pgsql_password }}}"
+        - name: postgres_db
+          value: "{{ pgsql_db }}"
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+      endpoints:
+        - name: postgres
+          targetPort: 5432
+          exposure: internal
+      volumeMounts:
+        - name: postgresql-volume
+          path: /var/lib/postgresql/data/pgdata
   - name: cargo-volume
     volume:
       size: 2Gi
