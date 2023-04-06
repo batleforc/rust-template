@@ -53,11 +53,11 @@ components:
         - name: "OTEL_EXPORTER_JAEGER_ENDPOINT"
           value: "http://jaeger-collector.jaeger.svc.cluster.local:14268/api/traces"
       volumeMounts:
-        - name: cargo
+        - name: cargo-volume
           path: /usr/local/cargo
-        - name: rustup
+        - name: rustup-volume
           path: /usr/local/rustup
-        - name: rust
+        - name: rust-volume
           path: /usr/local/rust
   - name: postgres
     container:
@@ -74,13 +74,13 @@ components:
         - name: postgres
           targetPort: 5432
           exposure: none
-  - name: cargo
+  - name: cargo-volume
     volume:
       size: 2Gi
-  - name: rustup
+  - name: rustup-volume
     volume:
       size: 2Gi
-  - name: rust
+  - name: rust-volume
     volume:
       size: 2Gi
 commands:
