@@ -107,3 +107,7 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 ## Test de charge
 
 <https://github.com/fcsonline/drill>
+
+## Configuring Jaeger collector
+
+- <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md#jaeger-exporter>
