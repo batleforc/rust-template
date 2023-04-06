@@ -36,6 +36,9 @@ components:
       endpoints:
         - name: "rust"
           targetPort: 5437
+          protocol: https
+          secure: true
+          exposure: public
       env:
         - name: RUST_LOG
           value: info
@@ -78,7 +81,7 @@ components:
       endpoints:
         - name: postgres
           targetPort: 5432
-          exposure: internal
+          exposure: none
       volumeMounts:
         - name: postgresql-volume
           path: /var/lib/postgresql/data
