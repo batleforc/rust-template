@@ -67,11 +67,11 @@ components:
       image: postgres:15
       memoryLimit: 512Mi
       env:
-        - name: postgres_user
+        - name: POSTGRES_USER
           value: "{{ pgsql_user }}"
-        - name: postgres_password
+        - name: POSTGRES_PASSWORD
           value: "{{ pgsql_password }}}"
-        - name: postgres_db
+        - name: POSTGRES_DB
           value: "{{ pgsql_db }}"
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
