@@ -1,6 +1,9 @@
 WINDOWS_TARGET=x86_64-pc-windows-gnu
 LINUX_TARGET=x86_64-unknown-linux-gnu
 MACOS_TARGET=x86_64-apple-darwin
+REGISTRY=harbor.weebo.fr/batleforc/
+IMAGE_NAME=rust_api
+TAG=latest
 
 run_api:
 	@cargo run
@@ -38,5 +41,11 @@ build_api_linux:
 build_api_macos:
 	@rustup target add $(MACOS_TARGET)
 	@cargo build --target $(MACOS_TARGET)
+
+build:
+	@cargo build
+
+build_containeur:
+	@docker build -t $(REGISTRY)$(IMAGE_NAME):$(TAG) .
 
 build_api: build_api_windows build_api_linux build_api_macos
