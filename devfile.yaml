@@ -36,6 +36,25 @@ components:
           protocol: https
           secure: true
           exposure: public
+      env:
+        - name: RUST_LOG
+          value: info
+        - name: RUST_BACKTRACE
+          value: "1"
+        - name: "DB_HOST"
+          value: "postgres"
+        - name: "DB_PORT"
+          value: "5432"
+        - name: "DB_USER"
+          value: "{{ pgsql_user }}"
+        - name: "DB_PASSWORD"
+          value: "{{ pgsql_password }}"
+        - name: "DB_DATABASE"
+          value: "{{ pgsql_db }}"
+        - name: "DB_LOAD_DATASET"
+          value: "true"
+        - name: "OTEL_EXPORTER_JAEGER_ENDPOINT"
+          value: "http://jaeger-collector.jaeger.svc.cluster.local:14268/api/traces"
     name: tools
 
   - name: postgres
