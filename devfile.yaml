@@ -25,46 +25,13 @@ variables:
   pgsql_password: "postgres"
 
 components:
-  - name: rust
-    container:
-      image: rust:1.68.0
-      memoryLimit: 512Mi
-      mountSources: true
+  - container:
+      cpuLimit: 1000m
+      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      memoryLimit: 1Gi
       sourceMapping: /projects
-      command: ["tail"]
-      args: ["-f", "/dev/null"]
-      endpoints:
-        - name: "rust"
-          targetPort: 5437
-          protocol: https
-          secure: true
-          exposure: public
-      env:
-        - name: RUST_LOG
-          value: info
-        - name: RUST_BACKTRACE
-          value: "1"
-        - name: "DB_HOST"
-          value: "postgres"
-        - name: "DB_PORT"
-          value: "5432"
-        - name: "DB_USER"
-          value: "{{ pgsql_user }}"
-        - name: "DB_PASSWORD"
-          value: "{{ pgsql_password }}"
-        - name: "DB_DATABASE"
-          value: "{{ pgsql_db }}"
-        - name: "DB_LOAD_DATASET"
-          value: "true"
-        - name: "OTEL_EXPORTER_JAEGER_ENDPOINT"
-          value: "http://jaeger-collector.jaeger.svc.cluster.local:14268/api/traces"
-      volumeMounts:
-        - name: cargo-volume
-          path: /usr/local/cargo
-        - name: rustup-volume
-          path: /usr/local/rustup
-        - name: rust-volume
-          path: /usr/local/rust
+    name: tools
+
   - name: postgres
     container:
       image: postgres:15
