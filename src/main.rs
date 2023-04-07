@@ -77,6 +77,7 @@ impl Modify for SecurityAddon {
         route::auth::register::register,
         route::auth::refresh::refresh,
         route::auth::logout::logout,
+        route::auth::info::auth_status,
         route::user::current_user::get_current_user,
         route::user::get_one_user::get_one_user,
         route::user::delete_user::delete_user,
@@ -99,6 +100,9 @@ impl Modify for SecurityAddon {
             route::auth::register::RegisterUser,
             route::auth::register::RegisterUserReturn,
             route::auth::refresh::RefreshTokenReturn,
+            route::auth::info::AuthStatus,
+            route::auth::info::AuthProtocol,
+            route::auth::info::AuthType,
         )
     ),
     modifiers(&SecurityAddon)

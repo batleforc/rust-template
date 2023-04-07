@@ -25,6 +25,8 @@ What this api does:
 
 Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/todo.rs#L135>
 
+### GET /api/auth => Return the auth model : DONE
+
 ### POST /api/auth/login => Include the otp code if the user has activated it : DONE
 
 ### GET /api/auth/logout : DONE

@@ -1,5 +1,6 @@
 use actix_web::{web, Scope};
 
+use super::info;
 use super::login;
 use super::logout;
 use super::otp;
@@ -12,4 +13,5 @@ pub fn init_auth() -> Scope {
         .service(refresh::refresh)
         .service(logout::logout)
         .service(otp::init::init_otp())
+        .service(info::auth_status)
 }

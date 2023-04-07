@@ -1,0 +1,8 @@
+data
+Makefile
+devfile.yaml
+Readme.md
+.env
+.gitignore
+docker-compose.yaml
+Dockerfile
