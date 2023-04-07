@@ -30,6 +30,12 @@ components:
       image: quay.io/devfile/universal-developer-image:ubi8-latest
       memoryLimit: 1Gi
       sourceMapping: /projects
+      endpoints:
+        - name: "api"
+          targetPort: 5437
+          protocol: https
+          secure: true
+          exposure: public
     name: tools
 
   - name: postgres
