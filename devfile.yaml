@@ -19,10 +19,6 @@ metadata:
     - Totp
   displayName: Rust API
   icon: https://www.rust-lang.org/logos/rust-logo-128x128-blk.png
-variables:
-  pgsql_db: "postgres"
-  pgsql_user: "postgres"
-  pgsql_password: "postgres"
 
 components:
   - container:
@@ -45,11 +41,11 @@ components:
         - name: "DB_PORT"
           value: "5432"
         - name: "DB_USER"
-          value: {{ pgsql_user }}
+          value: postgres
         - name: "DB_PASSWORD"
-          value: {{ pgsql_password }}
+          value: postgres
         - name: "DB_DATABASE"
-          value: {{ pgsql_db }}
+          value: postgres
         - name: "DB_LOAD_DATASET"
           value: "true"
         - name: "OTEL_EXPORTER_JAEGER_ENDPOINT"
@@ -62,11 +58,11 @@ components:
       memoryLimit: 512Mi
       env:
         - name: POSTGRES_USER
-          value: {{ pgsql_user }}
+          value: postgres
         - name: POSTGRES_PASSWORD
-          value: {{ pgsql_password }}}
+          value: postgres
         - name: POSTGRES_DB
-          value: {{ pgsql_db }}
+          value: postgres
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
       endpoints:
