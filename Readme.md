@@ -4,6 +4,8 @@
 
 This is a template of an api to have a quick start.
 
+This api is linked to a [vue3 template](https://github.com/batleforc/vue-template).
+
 This api also help me learn how to use:
 
 - tracing/metrics/open telemetry
