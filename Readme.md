@@ -113,3 +113,9 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 ## Configuring Jaeger collector
 
 - <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md#jaeger-exporter>
+
+## Generate swagger.json
+
+```bash
+cargo run --bin generate
+```
