@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: jaeger
+  name: jaeger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: jaeger
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.kompose.network/dev-default: "true"
+        io.kompose.service: jaeger
+    spec:
+      containers:
+        - env:
+            - name: COLLECTOR_OTLP_ENABLED
+              value: "true"
+            - name: COLLECTOR_ZIPKIN_HOST_PORT
+              value: :9411
+          image: jaegertracing/all-in-one:1.42
+          name: jaeger
+          ports:
+            - containerPort: 6831
+              protocol: UDP
+            - containerPort: 6832
+              protocol: UDP
+            - containerPort: 5778
+            - containerPort: 16686
+            - containerPort: 4317
+            - containerPort: 4318
+            - containerPort: 14250
+            - containerPort: 14268
+            - containerPort: 14269
+            - containerPort: 9411
+          resources: {}
+      restartPolicy: Always

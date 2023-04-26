@@ -11,6 +11,21 @@ run_api:
 up_docker:
 	@docker-compose up jaeger postgres -d
 
+up_podman:
+	@podman play kube .\dev\postgres-claim0-persistentvolumeclaim.yaml
+	@podman play kube .\dev\postgres-deployment.yaml
+	@podman play kube .\dev\postgres-service.yaml
+	@podman play kube .\dev\jaeger-deployment.yaml
+
+stop_podman:
+	@podman play kube .\dev\postgres-claim0-persistentvolumeclaim.yaml --down
+	@podman play kube .\dev\postgres-deployment.yaml --down
+	@podman play kube .\dev\postgres-service.yaml --down
+	@podman play kube .\dev\jaeger-deployment.yaml --down
+
+run_api_podman:
+	@podman run -p 5437:5437 -v ./:/app  rust:1-alpine
+
 run: up_docker run_api
 
 test: test_docker test_api test_docker_stop

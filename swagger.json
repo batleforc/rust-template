@@ -1,0 +1,754 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Rust API",
+    "description": "This is the template for the Rust API",
+    "contact": {
+      "name": "Batleforc",
+      "url": "https://weebo.fr",
+      "email": "maxleriche.60@gmail.com"
+    },
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "operationId": "hello",
+        "responses": {
+          "200": {
+            "description": "Static health ready endpoint",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/auth": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Return the auth status (and in the future include the oidc enabled and if main auth enabled)",
+        "description": "Return the auth status (and in the future include the oidc enabled and if main auth enabled)",
+        "operationId": "status",
+        "responses": {
+          "200": {
+            "description": "Status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login user",
+        "description": "Login user",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginUser"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Login user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginUserReturn"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/auth/logout": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logout",
+        "description": "Logout\n\nThis endpoint is used to disconnect the user with the refresh token",
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "Logout",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "refresh_token": []
+          }
+        ]
+      }
+    },
+    "/api/auth/otp/activate": {
+      "get": {
+        "tags": [
+          "Auth>Otp"
+        ],
+        "summary": "Start the totp activate process",
+        "description": "Start the totp activate process",
+        "operationId": "generate",
+        "responses": {
+          "200": {
+            "description": "QrCode",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenOtp"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "access_token": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Auth>Otp"
+        ],
+        "summary": "End the totp activate process",
+        "description": "End the totp activate process",
+        "operationId": "activate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateOtp"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "access_token": []
+          }
+        ]
+      }
+    },
+    "/api/auth/otp/validate": {
+      "post": {
+        "tags": [
+          "Auth>Otp"
+        ],
+        "summary": "End the auth process",
+        "description": "End the auth process",
+        "operationId": "validate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateOtp"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginUserReturn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/auth/refresh": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Refresh token",
+        "description": "Refresh token\n\nThis endpoint is used to get access token from refresh token",
+        "operationId": "refresh",
+        "responses": {
+          "200": {
+            "description": "Token body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshTokenReturn"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "refresh_token": []
+          }
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register user",
+        "description": "Register user\n\nPassword must be between 3 and 20 characters long and contain at least one number, one lowercase and one uppercase letter.\nEmail must be a valid email.\nName and surname must be at least 2 characters long.",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterUser"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Register user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterUserReturn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error message"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/user": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get current user",
+        "description": "Get current user\n\nGet current user based on the token",
+        "operationId": "getuser",
+        "responses": {
+          "200": {
+            "description": "User",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error message"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "access_token": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Update current user",
+        "description": "Update current user\n\nUpdate current user based on the token",
+        "operationId": "updateuser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicUser"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error message"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "access_token": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Delete current user",
+        "description": "Delete current user\n\nDelete current user based on the token",
+        "operationId": "deleteuser",
+        "responses": {
+          "200": {
+            "description": "success"
+          },
+          "400": {
+            "description": "Error message"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "access_token": []
+          }
+        ]
+      }
+    },
+    "/api/user/{id}": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get one by uid user",
+        "description": "Get one by uid user\n\nGet one user by id",
+        "operationId": "getoneuser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id de l'utilisateur",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicUser"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error message"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "access_token": []
+          }
+        ]
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Prometheus log",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivateOtp": {
+        "type": "object",
+        "required": [
+          "otp_code"
+        ],
+        "properties": {
+          "otp_code": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthProtocol": {
+        "type": "object",
+        "required": [
+          "type_auth",
+          "name",
+          "icon"
+        ],
+        "properties": {
+          "icon": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type_auth": {
+            "$ref": "#/components/schemas/AuthType"
+          }
+        }
+      },
+      "AuthStatus": {
+        "type": "object",
+        "required": [
+          "enabled_protocol",
+          "can_register"
+        ],
+        "properties": {
+          "can_register": {
+            "type": "boolean"
+          },
+          "enabled_protocol": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthProtocol"
+            }
+          }
+        }
+      },
+      "AuthType": {
+        "type": "string",
+        "enum": [
+          "Oidc",
+          "BuildIn"
+        ]
+      },
+      "GenOtp": {
+        "type": "object",
+        "required": [
+          "url",
+          "qr_code"
+        ],
+        "properties": {
+          "qr_code": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginStatus": {
+        "type": "string",
+        "enum": [
+          "OtpStep",
+          "RefreshStep"
+        ]
+      },
+      "LoginUser": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginUserReturn": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/LoginStatus"
+          },
+          "token": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "PublicUser": {
+        "type": "object",
+        "required": [
+          "id",
+          "nom",
+          "prenom"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nom": {
+            "type": "string"
+          },
+          "prenom": {
+            "type": "string"
+          }
+        }
+      },
+      "RefreshTokenReturn": {
+        "type": "object",
+        "required": [
+          "access_token"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterUser": {
+        "type": "object",
+        "required": [
+          "email",
+          "password",
+          "nom",
+          "prenom"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "nom": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "prenom": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterUserReturn": {
+        "type": "object",
+        "required": [
+          "created",
+          "email",
+          "nom",
+          "prenom"
+        ],
+        "properties": {
+          "created": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "string"
+          },
+          "nom": {
+            "type": "string"
+          },
+          "prenom": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "nom",
+          "prenom",
+          "otp_enabled",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nom": {
+            "type": "string"
+          },
+          "otp_enabled": {
+            "type": "boolean"
+          },
+          "prenom": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserUpdate": {
+        "type": "object",
+        "properties": {
+          "nom": {
+            "type": "string"
+          },
+          "prenom": {
+            "type": "string"
+          }
+        }
+      },
+      "ValidateOtp": {
+        "type": "object",
+        "required": [
+          "otp_code",
+          "one_time_token"
+        ],
+        "properties": {
+          "one_time_token": {
+            "type": "string"
+          },
+          "otp_code": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "access_token": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "refresh_token": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentification"
+    },
+    {
+      "name": "Auth>Otp",
+      "description": "Authentification>Otp"
+    },
+    {
+      "name": "Health",
+      "description": "Health check"
+    },
+    {
+      "name": "User",
+      "description": "User management"
+    }
+  ]
+}

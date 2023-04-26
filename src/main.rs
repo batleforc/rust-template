@@ -1,114 +1,20 @@
 use crate::helper::tracing::init_telemetry;
-use crate::route::auth::otp::{activate, generate, validate};
+use crate::route::apidoc::ApiDoc;
+use crate::route::health::{health, hello};
 use actix_cors::Cors;
 use actix_web::dev::Service as _;
 use actix_web::http::header;
-use actix_web::{get, web, App, HttpResponse, HttpServer};
+use actix_web::{web, App, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use dotenvy::dotenv;
 use tokio_postgres::NoTls;
 use tracing_actix_web::{RequestId, TracingLogger};
-use utoipa::{
-    openapi::security::{Http, HttpAuthScheme, SecurityScheme},
-    Modify, OpenApi,
-};
+use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 mod helper;
 mod model;
 mod route;
-
-/// This is the base endpoint for the API
-///
-/// This endpoint is used to check if the API is up and running
-#[utoipa::path(tag = "Health")]
-#[get("/")]
-async fn hello() -> &'static str {
-    "Hello RustApi!"
-}
-
-/// This is the health endpoint for the API
-///
-/// This endpoint is used to provide a prometheus endpoint for the API, and output metrics
-#[utoipa::path(tag = "Health")]
-#[get("/metrics")]
-async fn health() -> HttpResponse {
-    HttpResponse::Ok().finish()
-}
-
-struct SecurityAddon;
-
-impl Modify for SecurityAddon {
-    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
-        let components = openapi.components.as_mut().unwrap(); // we can unwrap safely since there already is components registered.
-        components.add_security_scheme(
-            "access_token",
-            SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
-        );
-        components.add_security_scheme(
-            "refresh_token",
-            SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
-        )
-    }
-}
-
-#[derive(OpenApi)]
-#[openapi(
-    info(
-        title = "Rust API",
-        version = "0.1.0",
-        description = "This is the template for the Rust API",
-        contact(
-            name = "Batleforc",
-            url = "https://weebo.fr",
-            email = "maxleriche.60@gmail.com"
-        ),
-    ),
-    tags(
-        (name = "Auth", description = "Authentification"),
-        (name = "Auth>Otp", description = "Authentification>Otp"),
-        (name = "Health", description = "Health check"),
-        (name = "User", description = "User management")
-    ),
-    paths(
-        health,
-        hello,
-        route::auth::login::login,
-        route::auth::register::register,
-        route::auth::refresh::refresh,
-        route::auth::logout::logout,
-        route::auth::info::auth_status,
-        route::user::current_user::get_current_user,
-        route::user::get_one_user::get_one_user,
-        route::user::delete_user::delete_user,
-        route::user::update_user::update_user,
-        generate::generate_otp,
-        activate::activate_otp,
-        validate::validate_otp,
-    ),
-    components(
-        schemas(
-            model::user::User,
-            model::user::PublicUser,
-            model::user::UserUpdate,
-            generate::GenOtp,
-            activate::ActivateOtp,
-            validate::ValidateOtp,
-            route::auth::login::LoginUser,
-            route::auth::login::LoginUserReturn,
-            route::auth::login::LoginStatus,
-            route::auth::register::RegisterUser,
-            route::auth::register::RegisterUserReturn,
-            route::auth::refresh::RefreshTokenReturn,
-            route::auth::info::AuthStatus,
-            route::auth::info::AuthProtocol,
-            route::auth::info::AuthType,
-        )
-    ),
-    modifiers(&SecurityAddon)
-)
-    ]
-struct ApiDoc;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
