@@ -121,6 +121,7 @@ pub async fn register(
         otp_secret: None,
         otp_url: None,
         one_time_token: None,
+        is_oauth: false,
     };
 
     let id = user.id.clone();

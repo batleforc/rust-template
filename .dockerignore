@@ -6,3 +6,5 @@ Readme.md
 .gitignore
 docker-compose.yaml
 Dockerfile
+devfile/
+terraform

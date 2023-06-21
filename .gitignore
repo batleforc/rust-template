@@ -1,2 +1,22 @@
 /target
 /data
+.odo
+.env
+
+devfile
+
+# Terraform
+machinekey
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+.terraformrc
+terraform.rc
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log

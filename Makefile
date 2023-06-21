@@ -9,22 +9,16 @@ run_api:
 	@cargo run
 
 up_docker:
+	@docker-compose up jaeger postgres crdb zitadel -d
+
+up_needed_docker:
 	@docker-compose up jaeger postgres -d
 
-up_podman:
-	@podman play kube .\dev\postgres-claim0-persistentvolumeclaim.yaml
-	@podman play kube .\dev\postgres-deployment.yaml
-	@podman play kube .\dev\postgres-service.yaml
-	@podman play kube .\dev\jaeger-deployment.yaml
+up_zitadel:
+	@docker-compose up crdb zitadel -d
 
-stop_podman:
-	@podman play kube .\dev\postgres-claim0-persistentvolumeclaim.yaml --down
-	@podman play kube .\dev\postgres-deployment.yaml --down
-	@podman play kube .\dev\postgres-service.yaml --down
-	@podman play kube .\dev\jaeger-deployment.yaml --down
-
-run_api_podman:
-	@podman run -p 5437:5437 -v ./:/app  rust:1-alpine
+cli_terraform:
+	@docker-compose run --rm terraform /bin/ash
 
 run: up_docker run_api
 
