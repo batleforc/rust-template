@@ -27,7 +27,7 @@ resource "zitadel_human_user" "batleforc" {
   display_name       = "Maxime"
   preferred_language = "fr"
   gender             = "GENDER_MALE"
-  email              = "maxleriche.60@gmail.com"
+  email              = "max@weebo.fr"
   is_email_verified  = true
   initial_password   = "Rust_template1"
 }
@@ -36,4 +36,40 @@ resource "zitadel_org_member" "batleforc_org" {
   org_id  = zitadel_org.dev.id
   user_id = zitadel_human_user.batleforc.id
   roles   = ["ORG_OWNER"]
+}
+
+resource "zitadel_project" "rust_template" {
+  org_id                 = zitadel_org.dev.id
+  name                   = "rust_template"
+  project_role_assertion = true
+}
+
+resource "zitadel_project_role" "admin" {
+  org_id       = zitadel_org.dev.id
+  project_id   = zitadel_project.rust_template.id
+  role_key     = "ADMIN"
+  display_name = "Admin"
+  group        = "ADMIN"
+}
+
+resource "zitadel_project_role" "moderator" {
+  org_id       = zitadel_org.dev.id
+  project_id   = zitadel_project.rust_template.id
+  role_key     = "MODERATOR"
+  display_name = "Moderator"
+  group        = "MODERATOR"
+}
+resource "zitadel_project_role" "member" {
+  org_id       = zitadel_org.dev.id
+  project_id   = zitadel_project.rust_template.id
+  role_key     = "MEMBER"
+  display_name = "Member"
+  group        = "MEMBER"
+}
+
+resource "zitadel_project_member" "batleforc_membership" {
+  org_id     = zitadel_org.dev.id
+  project_id = zitadel_project.rust_template.id
+  user_id    = zitadel_human_user.batleforc.id
+  roles      = ["ADMIN"]
 }
