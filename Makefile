@@ -19,6 +19,8 @@ up_zitadel:
 
 cli_terraform:
 	@docker-compose run --rm terraform /bin/ash
+up_terraform:
+	@docker-compose up terraform
 
 run: up_docker run_api
 
