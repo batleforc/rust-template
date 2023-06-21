@@ -45,6 +45,7 @@ pub struct User {
     pub updated_at: chrono::DateTime<chrono::Utc>,
     #[serde(skip)]
     pub one_time_token: Option<String>,
+    pub is_oauth: bool,
 }
 
 impl User {
@@ -62,6 +63,7 @@ impl User {
                 otp_url VARCHAR(255),
                 otp_enabled BOOLEAN DEFAULT FALSE,
                 one_time_token VARCHAR(255),
+                is_oauth BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMPZ NOT NULL DEFAULT NOW(),
                 updated_at TIMESTAMPZ NOT NULL DEFAULT NOW()
             );";
@@ -74,7 +76,7 @@ impl User {
         let client = pool.get().await.unwrap();
 
         let get_one = "
-            SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled,one_time_token, created_at, updated_at
+            SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled, one_time_token, is_oauth, created_at, updated_at
             FROM users
             WHERE id = $1";
         let row = client.query_one(get_one, &[&id]).await?;
@@ -88,8 +90,9 @@ impl User {
             otp_url: row.get(6),
             otp_enabled: row.get(7),
             one_time_token: row.get(8),
-            created_at: row.get(9),
-            updated_at: row.get(10),
+            is_oauth: row.get(9),
+            created_at: row.get(10),
+            updated_at: row.get(11),
         })
     }
 
@@ -115,7 +118,7 @@ impl User {
         let client = pool.get().await.unwrap();
 
         let get_one = "
-            SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled,one_time_token, created_at, updated_at
+            SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled,one_time_token, is_oauth, created_at, updated_at
             FROM users
             WHERE email = $1";
         let row = client.query_one(get_one, &[&email]).await?;
@@ -130,8 +133,9 @@ impl User {
             otp_url: row.get(6),
             otp_enabled: row.get(7),
             one_time_token: row.get(8),
-            created_at: row.get(9),
-            updated_at: row.get(10),
+            is_oauth: row.get(9),
+            created_at: row.get(10),
+            updated_at: row.get(11),
         })
     }
 
@@ -142,7 +146,7 @@ impl User {
         let client = pool.get().await.unwrap();
 
         let get_one = "
-            SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled,one_time_token, created_at, updated_at
+            SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled,one_time_token, is_oauth, created_at, updated_at
             FROM users
             WHERE one_time_token = $1";
         let row = client.query_one(get_one, &[&token]).await?;
@@ -157,8 +161,9 @@ impl User {
             otp_url: row.get(6),
             otp_enabled: row.get(7),
             one_time_token: row.get(8),
-            created_at: row.get(9),
-            updated_at: row.get(10),
+            is_oauth: row.get(9),
+            created_at: row.get(10),
+            updated_at: row.get(11),
         })
     }
 
@@ -166,8 +171,8 @@ impl User {
         let client = pool.get().await.unwrap();
 
         let create = "
-            INSERT INTO users (email, password, nom, prenom, otp_secret, otp_url, otp_enabled, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
+            INSERT INTO users (email, password, nom, prenom, otp_secret, otp_url, otp_enabled, is_oauth, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
         client
             .execute(
                 create,
@@ -179,6 +184,7 @@ impl User {
                     &self.otp_secret,
                     &self.otp_url,
                     &self.otp_enabled,
+                    &self.is_oauth,
                     &self.created_at,
                     &self.updated_at,
                 ],
