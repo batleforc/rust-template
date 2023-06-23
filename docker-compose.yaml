@@ -81,4 +81,4 @@ services:
       - ./machinekey:/machinekey
     working_dir: /terraform
     entrypoint: ["/bin/sh", "-c"]
-    command: ["terraform init && terraform apply -auto-approve"]
+    command: ["terraform init && terraform apply -auto-approve -var='path=/machinekey' -var='domain=zitadel'"]
