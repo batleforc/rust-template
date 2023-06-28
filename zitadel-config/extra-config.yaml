@@ -1,0 +1,10 @@
+Log:
+  Level: "trace"
+
+LogStore:
+  Access:
+    Stdout:
+      enabled: true
+  Execution:
+    Stdout:
+      enabled: true

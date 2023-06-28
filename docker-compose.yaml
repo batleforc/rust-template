@@ -42,6 +42,7 @@ services:
     restart: 'always'
     image: 'ghcr.io/zitadel/zitadel:latest'
     command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
+    #command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled --config /extra-config.yaml'
     environment:
       - 'ZITADEL_DATABASE_COCKROACH_HOST=crdb'
       - 'ZITADEL_EXTERNALSECURE=false'
@@ -58,6 +59,7 @@ services:
       - '8080:8080'
     volumes:
       - ./machinekey:/machinekey
+     # - ./zitadel-config/extra-config.yaml:/extra-config.yaml:ro
 
   crdb:
     restart: 'always'

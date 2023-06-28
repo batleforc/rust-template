@@ -17,6 +17,7 @@ use tracing::Instrument;
   ),
   params(
     ("id" = uuid, Path, description = "Id de l'utilisateur"),
+    ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
   ),
   security(
     ("access_token" = [])

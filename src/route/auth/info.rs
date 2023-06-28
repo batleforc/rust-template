@@ -15,10 +15,19 @@ pub struct AuthProtocol {
     pub icon: String,
 }
 
-#[derive(Serialize, Deserialize, ToSchema, Clone)]
+#[derive(Serialize, Deserialize, ToSchema, Clone, PartialEq)]
 pub enum AuthType {
     Oidc,
     BuildIn,
+}
+
+impl AuthType {
+    pub fn to_string(&self) -> String {
+        match self {
+            AuthType::Oidc => "oidc".to_string(),
+            AuthType::BuildIn => "buildin".to_string(),
+        }
+    }
 }
 
 /// Return the auth status (and in the future include the oidc enabled and if main auth enabled)

@@ -21,6 +21,9 @@ pub struct ActivateOtp {
       (status = 400, description = "Bad request"),
       (status = 500, description = "Internal server error"),
   ),
+  params(
+    ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
+  ),
   security(
     ("access_token" = [])
   )

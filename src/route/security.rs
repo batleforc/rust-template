@@ -15,6 +15,10 @@ impl Modify for SecurityAddon {
         components.add_security_scheme(
             "refresh_token",
             SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
+        );
+        components.add_security_scheme(
+            "Oidc",
+            SecurityScheme::Http(Http::new(HttpAuthScheme::OAuth)),
         )
     }
 }
