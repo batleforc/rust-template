@@ -100,6 +100,19 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 - [ ] Add endpoint to authenticate user with OIDC
 - [ ] Handle case where the user log for the first time
 - [ ] Handle case where the email is already used
+- [ ]
+
+### TODO : True backoffice
+
+- [ ] Add a backoffice to manage the user
+- [ ] Add a backoffice to enable/disable the OIDC
+- [ ] Add a backoffice to enable/disable the register
+- [ ] Add a backoffice to handle the user role (can build a role system and add if needed mapping to the oidc provider)
+- [ ] Add a backoffice to reset the user password or trigger the reset password email
+- [ ] Add a backoffice to turn on/off the maintenance mode
+- [ ] Add a backoffice to manage the maintenance mode message
+- [ ] Make the backoffice enough generic to be able to use and expand it in other project
+- [ ] Make the backoffice hable to connect to grafana and prometheus
 
 ## Pre-requisites
 
@@ -121,3 +134,28 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 ```bash
 cargo run --bin generate
 ```
+
+## Oidc Support "Zitadel"
+
+In order to handle the OIDC workflow there is a need to make a choice:
+
+- The full workflow is handled by the api
+- The FRONT auth the user and handle the token and the backend only validate the token (chosen one)
+
+If possible it would be best to be able to have both build in auth and oidc auth.
+
+### The FRONT auth the user and handle the token and the backend only validate the token
+
+If we chose this way, there is some need to be aware of:
+
+- The back need to be aware of the FRONT token (the FRONT need to send the token in the header)
+- The back need to be able to validate the token (the back need to have a way to validate the token with the OIDC provider)
+
+If possible it would be better to have the backend provide the frontend oidc configuration (client id, auth url, etc) it would allow to have better security and why not have an apikey for the front to call this kind of backend endpoint.
+
+### The full workflow is handled by the api
+
+If we chose this way, there is some need to be aware of:
+
+- The front is aware of the token but have no directe access to the OIDC provider (the token is either put in cookie or handed to the front who put it in the header each time it call the back)
+- The back need to handle manualy the full auth process

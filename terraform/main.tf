@@ -17,13 +17,6 @@ variable "domain" {
   default = "localhost"
 }
 
-#provider "zitadel" {
-#  domain           = "localhost"
-#  insecure         = "true"
-#  port             = "8080"
-#  jwt_profile_file = "/machinekey/zitadel-admin-sa.json"
-#}
-
 provider "zitadel" {
   domain           = var.domain
   insecure         = "true"
@@ -90,37 +83,32 @@ resource "zitadel_project_role" "member" {
 }
 
 
-# resource "zitadel_application_api" "backend" {
-#   org_id           = zitadel_org.dev.id
-#   project_id       = zitadel_project.rust_template.id
-#   name             = "backend"
-#   auth_method_type = "API_AUTH_METHOD_TYPE_PRIVATE_KEY_JWT"
-# }
+resource "zitadel_application_api" "backend" {
+  org_id           = zitadel_org.dev.id
+  project_id       = zitadel_project.rust_template.id
+  name             = "backend"
+  auth_method_type = "API_AUTH_METHOD_TYPE_PRIVATE_KEY_JWT"
+}
+resource "zitadel_application_key" "backend_key" {
+  org_id          = zitadel_org.dev.id
+  project_id      = zitadel_project.rust_template.id
+  app_id          = zitadel_application_api.backend.id
+  key_type        = "KEY_TYPE_JSON"
+  expiration_date = "2500-12-31T23:59:59Z"
+}
+resource "local_file" "rust_template_key" {
+  content  = zitadel_application_key.backend_key.key_details
+  filename = "${var.path}/rust_template_key.json"
+}
 
-# resource "zitadel_application_key" "backend_key" {
-#   org_id          = zitadel_org.dev.id
-#   project_id      = zitadel_project.rust_template.id
-#   app_id          = zitadel_application_api.backend.id
-#   key_type        = "KEY_TYPE_JSON"
-#   expiration_date = "2500-12-31T23:59:59Z"
-# }
-
-# resource "local_file" "rust_template_key" {
-#   content  = zitadel_application_key.backend_key.key_details
-#   filename = "/machinekey/rust_template_key.json"
-# }
-
-# We are possibly not in the case of an api but in a Web case (and the vue side should be an user agent)
-# https://registry.terraform.io/providers/zitadel/zitadel/latest/docs/resources/application_oidc
-
-resource "zitadel_application_oidc" "backend" {
+resource "zitadel_application_oidc" "frontend" {
   project_id                  = zitadel_project.rust_template.id
   org_id                      = zitadel_org.dev.id
-  name                        = "backend"
-  redirect_uris               = ["http://localhost:5437", "http://localhost:5437/oauth2/callback", "http://localhost:5437/api/oauth2/callback"]
+  name                        = "frontend"
+  redirect_uris               = ["http://localhost:5000", "http://localhost:5000/oauth2/callback", "http://localhost:5000/api/oauth2/callback", "https://oauth.pstmn.io/v1/callback"]
   response_types              = ["OIDC_RESPONSE_TYPE_CODE"]
   grant_types                 = ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE"]
-  post_logout_redirect_uris   = ["http://localhost:5437/api/oauth2/logout"]
+  post_logout_redirect_uris   = ["http://localhost:5000/api/oauth2/logout"]
   app_type                    = "OIDC_APP_TYPE_WEB"
   auth_method_type            = "OIDC_AUTH_METHOD_TYPE_NONE"
   dev_mode                    = true
@@ -128,10 +116,10 @@ resource "zitadel_application_oidc" "backend" {
   access_token_role_assertion = true
   id_token_role_assertion     = true
   id_token_userinfo_assertion = true
-  additional_origins          = ["http://localhost:5437"]
+  additional_origins          = ["http://localhost:5437", "https://oauth.pstmn.io"]
 }
 
-resource "local_file" "rust_template_key" {
-  content  = "{\"id\":\"${zitadel_application_oidc.backend.client_id}\",\"secret\":\"${zitadel_application_oidc.backend.client_secret}\"}"
-  filename = "${var.path}/rust_template_key.json"
+resource "local_file" "front_template_key" {
+  content  = "{\"id\":\"${zitadel_application_oidc.frontend.client_id}\"}"
+  filename = "${var.path}/front_template_key.json"
 }
