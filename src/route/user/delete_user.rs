@@ -17,7 +17,10 @@ use tracing::Instrument;
   ),
   security(
     ("access_token" = [])
-  )
+  ),
+  params(
+    ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
+  ),
 )]
 #[delete("")]
 pub async fn delete_user(user: User, db_pool: web::Data<Pool>) -> impl Responder {

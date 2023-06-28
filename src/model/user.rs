@@ -1,5 +1,6 @@
 use std::{env::var, time::SystemTimeError};
 
+use super::super::route::auth::info::AuthType;
 use actix_web::{error::ErrorUnauthorized, web, FromRequest, HttpResponse};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use deadpool_postgres::Pool;
@@ -64,8 +65,8 @@ impl User {
                 otp_enabled BOOLEAN DEFAULT FALSE,
                 one_time_token VARCHAR(255),
                 is_oauth BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMPZ NOT NULL DEFAULT NOW(),
-                updated_at TIMESTAMPZ NOT NULL DEFAULT NOW()
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             );";
         client.execute(create_table, &[]).await
     }
@@ -325,17 +326,21 @@ impl FromRequest for User {
         let req = req.clone();
         tracing::info!("Start auth middleware");
         let get_token_span = tracing::info_span!("Auth: Get Token in header");
-        let token = match get_token_span.in_scope(|| -> Result<&str, HttpResponse> {
-            header::extract_authorization_header(&req)
-        }) {
-            Ok(token) => token,
-            Err(_) => {
-                tracing::error!("Error while getting token");
-                return Box::pin(async {
-                    Err(ErrorUnauthorized("Error lors de la récupération du token"))
-                });
-            }
-        };
+        let (token, auth_type) =
+            match get_token_span.in_scope(|| -> Result<(&str, AuthType), HttpResponse> {
+                header::extract_authorization_header(&req)
+            }) {
+                Ok(token) => token,
+                Err(_) => {
+                    tracing::error!("Error while getting token");
+                    return Box::pin(async {
+                        Err(ErrorUnauthorized("Error lors de la récupération du token"))
+                    });
+                }
+            };
+        tracing::debug!("Token of type {:?} found", auth_type.to_string());
+
+        // Validate token depending on the auth type
         drop(get_token_span);
         let validate_token_span = tracing::info_span!("Auth: Validate Token");
         let claims = match validate_token_span.in_scope(|| -> Result<TokenClaims, String> {

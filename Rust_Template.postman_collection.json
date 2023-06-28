@@ -1,0 +1,186 @@
+{
+	"info": {
+		"_postman_id": "74f7cbb9-3a94-474d-8fa7-10408cc3ac1e",
+		"name": "Rust_Template",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9877623"
+	},
+	"item": [
+		{
+			"name": "UserInfo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/oidc/v1/userinfo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"oidc",
+						"v1",
+						"userinfo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Token",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "client_id",
+							"value": "${{client_id}}",
+							"type": "text"
+						},
+						{
+							"key": "refresh_token",
+							"value": "BkQcwz8GXrtRIXCY0veDSbPjenDrQBbugXOSmSPln0ZTw3mAoSTTAD1LBw2MUTZJ3xdXLcBOuNH_RK77Jl1CU0LjqnnOTAAh\",\"expires_in\":43199,\"id_token\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IjIyMDI5ODU0MDgwMTMzOTM5NSJ9.eyJhbXIiOlsicGFzc3dvcmQiLCJwd2QiXSwiYXRfaGFzaCI6IjZBNzkyOHZQczBZS1dYMlN5T0RZdWciLCJhdWQiOlsiMjE5ODc2OTUxOTc5MDEyMDk5QHJ1c3RfdGVtcGxhdGUiLCIyMTk4NTY0ODIwODA5Mjc3NDciXSwiYXV0aF90aW1lIjoxNjg3NTQwOTMyLCJhenAiOiIyMTk4NzY5NTE5NzkwMTIwOTlAcnVzdF90ZW1wbGF0ZSIsImNsaWVudF9pZCI6IjIxOTg3Njk1MTk3OTAxMjA5OUBydXN0X3RlbXBsYXRlIiwiZW1haWwiOiJtYXhAd2VlYm8uZnIiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZXhwIjoxNjg3ODYyNjcyLCJmYW1pbHlfbmFtZSI6ImJhdGxlZm9yYyIsImdlbmRlciI6Im1hbGUiLCJnaXZlbl9uYW1lIjoibWF4IiwiaWF0IjoxNjg3ODE5NDcyLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJsb2NhbGUiOiJlbiIsIm5hbWUiOiJNYXhpbWUiLCJuaWNrbmFtZSI6ImJhdGxlZm9yYyIsInByZWZlcnJlZF91c2VybmFtZSI6ImJhdGxlZm9yY0Bsb2NhbGhvc3QuY29tIiwic3ViIjoiMjE5ODU2NDgyMDMwNTk2MDk5IiwidXBkYXRlZF9hdCI6MTY4NzU0MDY3NiwidXJuOnppdGFkZWw6aWFtOm9yZzpwcm9qZWN0OjIxOTg1NjQ4MjA4MDkyNzc0Nzpyb2xlcyI6eyJBRE1JTiI6eyIyMTk4NTY0ODE3MTE4Mjg5OTUiOiJydXN0X3RlbXBsYXRlLmxvY2FsaG9zdCJ9fSwidXJuOnppdGFkZWw6aWFtOm9yZzpwcm9qZWN0OnJvbGVzIjp7IkFETUlOIjp7IjIxOTg1NjQ4MTcxMTgyODk5NSI6InJ1c3RfdGVtcGxhdGUubG9jYWxob3N0In19fQ.m5c3BTOQyGyKpnPAvjC5Q5cDPVZupuPHdxMhh9RGFpyLdWZLi5e2LviSzcHrDX_3g6abJdmZlwXeAJhxckyAOqq35UxVAE6c__Mfe2eCglc5HyYoRiB97afopH7N7oyP_d83YcpNQZ1oqcJV3TOBpJcsPEhRufFKngSuitp3wyu60ghQ9yWN8pCg8ZzRAsdcuADIo35p1BgBKs28IuHwlslJeLPB-YEpMRD21NCziLDyN1Jd7t7eabPF1daJhcc1oNs_4q2CWf0yZoeg9d0vosjWqyEyk43Bx-XAmdHIwlOSS8pqxcXdzXET1zRVFsFta8VZ8RspDOX9zbsOsP8ahA",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "refresh_token",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "scope",
+							"value": "openid profile email offline_access",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/oauth/v2/token?grant_type=refresh_token&refresh_token=EehH_XTQJHlqo2YUUVsUQiw6250JbbbUsg-xA1gdI1fwafYXstf-rIY8E9Cf0Dlt87JVTt3GvVUsQSbr5otfNDisBvakih3q&scope=${{scope}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"oauth",
+						"v2",
+						"token"
+					],
+					"query": [
+						{
+							"key": "grant_type",
+							"value": "refresh_token"
+						},
+						{
+							"key": "refresh_token",
+							"value": "EehH_XTQJHlqo2YUUVsUQiw6250JbbbUsg-xA1gdI1fwafYXstf-rIY8E9Cf0Dlt87JVTt3GvVUsQSbr5otfNDisBvakih3q"
+						},
+						{
+							"key": "scope",
+							"value": "${{scope}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "scope",
+				"value": "${{scope}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "${{client_id}}",
+				"type": "string"
+			},
+			{
+				"key": "challengeAlgorithm",
+				"value": "S256",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "http://localhost:8080/oauth/v2/authorize",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "http://localhost:8080/oauth/v2/token",
+				"type": "string"
+			},
+			{
+				"key": "useBrowser",
+				"value": true,
+				"type": "boolean"
+			},
+			{
+				"key": "grant_type",
+				"value": "authorization_code_with_pkce",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "test",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "client_id",
+			"value": "219876951979012099@rust_template",
+			"type": "string"
+		},
+		{
+			"key": "scope",
+			"value": "openid profile email offline_access",
+			"type": "string"
+		}
+	]
+}

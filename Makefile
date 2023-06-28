@@ -23,9 +23,7 @@ up_terraform:
 	@docker-compose up terraform
 
 local_terraform:
-	@cd terraform
-	@terraform init
-	@terraform apply -auto-approve
+	@cd terraform && terraform init && terraform apply -auto-approve
 
 run: up_docker run_api
 

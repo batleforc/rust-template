@@ -1,3 +1,4 @@
+use super::info::AuthType;
 use actix_web::{get, http::header::ContentType, web, HttpRequest, HttpResponse, Responder};
 use deadpool_postgres::Pool;
 use serde::{Deserialize, Serialize};
@@ -24,6 +25,9 @@ pub struct RefreshTokenReturn {
   responses(
     (status = 200, description = "Token body", body = RefreshTokenReturn)
   ),
+  params(
+    ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
+  ),
   security(
     ("refresh_token" = [])
   )
@@ -31,15 +35,22 @@ pub struct RefreshTokenReturn {
 #[get("/refresh")]
 pub async fn refresh(req: HttpRequest, db_pool: web::Data<Pool>) -> impl Responder {
     let get_token_span = tracing::info_span!("Get Token in header");
-    let token = match get_token_span
-        .in_scope(|| -> Result<&str, HttpResponse> { header::extract_authorization_header(&req) })
-    {
-        Ok(token) => token,
-        Err(err) => return err,
-    };
+    let (token, auth_type) =
+        match get_token_span.in_scope(|| -> Result<(&str, AuthType), HttpResponse> {
+            header::extract_authorization_header(&req)
+        }) {
+            Ok(token) => token,
+            Err(err) => return err,
+        };
     drop(get_token_span);
     let check_token_span = tracing::info_span!("Check if token is valid");
     let mut claims = match check_token_span.in_scope(|| -> Result<TokenClaims, HttpResponse> {
+        if auth_type == AuthType::Oidc {
+            tracing::error!(token_type = ?auth_type.to_string(),"Invalid token type");
+            return Err(HttpResponse::Unauthorized()
+                .content_type(ContentType::plaintext())
+                .body("Invalid token type"));
+        }
         match token::TokenClaims::validate_token(token.to_string(), true) {
             Ok(claim) => Ok(claim),
             Err(err) => {
