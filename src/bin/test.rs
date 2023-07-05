@@ -17,13 +17,29 @@ async fn main() -> std::io::Result<()> {
     };
     let token =
         "wXX3BiK_EOhl_ripSPKLW8O_71KhwUWTAFBg0EbYIEcE_QMEomsozj7bS9Yy8ZmEBeAfRB8".to_string();
-    println!("oidc_handler: {:?}", oidc_handler);
-    match oidc_handler.back.unwrap().validate_token(token).await {
+    match oidc_handler
+        .back
+        .clone()
+        .unwrap()
+        .validate_token(token.clone())
+        .await
+    {
         Ok(token) => {
             if token {
                 println!("token: {:?}", token)
             } else {
                 println!("You are not authorized")
+            }
+        }
+        Err(e) => println!("Error: {}", e),
+    }
+
+    match oidc_handler.back.unwrap().get_user_info(token).await {
+        Ok(user_info) => {
+            if !user_info.is_null() {
+                println!("user_info: {:?}", user_info)
+            } else {
+                println!("Error while getting userinfo");
             }
         }
         Err(e) => println!("Error: {}", e),
