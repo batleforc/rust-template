@@ -43,6 +43,13 @@ async fn main() -> std::io::Result<()> {
         .endpoint("/metrics")
         .build()
         .unwrap();
+    let oidc_handler = match model::oidc::Oidc::new() {
+        Ok(oidc) => oidc,
+        Err(e) => {
+            println!("Error: {}", e);
+            model::oidc::Oidc::new_disable()
+        }
+    };
     println!("Starting server on port {}", port);
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -51,6 +58,7 @@ async fn main() -> std::io::Result<()> {
             .allow_any_header();
         App::new()
             .app_data(web::Data::new(dbpool.clone()))
+            .app_data(web::Data::new(oidc_handler.clone()))
             .wrap_fn(|mut req, srv| {
                 let request_id_asc = req.extract::<RequestId>();
                 let fut = srv.call(req);

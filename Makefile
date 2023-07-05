@@ -11,6 +11,12 @@ run_api:
 up_docker:
 	@docker-compose up jaeger postgres crdb zitadel -d
 
+run_generate:
+	@cargo run --bin generate
+
+run_sandbox:
+	@cargo run --bin test
+
 up_needed_docker:
 	@docker-compose up jaeger postgres -d
 
@@ -63,3 +69,6 @@ build_containeur:
 	@docker build -t $(REGISTRY)$(IMAGE_NAME):$(TAG) .
 
 build_api: build_api_windows build_api_linux build_api_macos
+
+choose_namespace:
+	@kubectl config set-context --current --namespace=$(NAMESPACE)
