@@ -115,15 +115,28 @@ impl BackOidc {
             .send()
             .await?;
         let status = res.status();
-        let body = res.text().await?;
-        println!("body: {}", body);
         if status != 200 {
-            println!("Error: {}", status);
             return Ok(false);
         }
-
+        let body = res.text().await?;
         let json: serde_json::Value = serde_json::from_str(&body).unwrap();
         let active = json["active"].as_bool().unwrap();
         Ok(active)
+    }
+
+    pub async fn get_user_info(self, token: String) -> Result<serde_json::Value, reqwest::Error> {
+        let client = Client::new();
+        let res = client
+            .get(&self.userinfo_url)
+            .header("Authorization", format!("Bearer {}", token))
+            .send()
+            .await?;
+        let status = res.status();
+        if status != 200 {
+            return Ok(serde_json::Value::Null);
+        }
+        let body = res.text().await?;
+        let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+        Ok(json)
     }
 }
