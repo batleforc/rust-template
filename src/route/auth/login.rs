@@ -125,7 +125,7 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
         "User logged in, generating refresh_token"
     );
 
-    let refresh_token = match TokenClaims::new_tokens(user.id, true) {
+    let refresh_token = match TokenClaims::new_tokens(user.id, user.email.clone(), true) {
         Ok(token) => token,
         Err(err) => {
             tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while generating token");

@@ -1,5 +1,5 @@
 use super::oidc_token::OidcTokenClaim;
-use reqwest::Client;
+use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use std::env::VarError;
 
@@ -90,7 +90,10 @@ impl Oidc {
 }
 
 impl BackOidc {
-    pub async fn validate_token(self, token: String) -> Result<bool, reqwest::Error> {
+    pub fn validate_token(
+        self,
+        token: String,
+    ) -> Result<(bool, serde_json::Value), reqwest::Error> {
         let client = Client::new();
         let mut oidc_token = OidcTokenClaim::new(self.client_id.clone(), self.issuer.clone());
         let token_oidc =
@@ -98,7 +101,7 @@ impl BackOidc {
                 Ok(token) => token,
                 Err(e) => {
                     println!("Error: {}", e);
-                    return Ok(false);
+                    return Ok((false, serde_json::Value::Null));
                 }
             };
         let res = client
@@ -112,30 +115,28 @@ impl BackOidc {
                 ),
                 ("client_assertion", token_oidc),
             ])
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         if status != 200 {
-            return Ok(false);
+            return Ok((false, serde_json::Value::Null));
         }
-        let body = res.text().await?;
+        let body = res.text()?;
         let json: serde_json::Value = serde_json::from_str(&body).unwrap();
         let active = json["active"].as_bool().unwrap();
-        Ok(active)
+        Ok((active, json))
     }
 
-    pub async fn get_user_info(self, token: String) -> Result<serde_json::Value, reqwest::Error> {
+    pub fn get_user_info(self, token: String) -> Result<serde_json::Value, reqwest::Error> {
         let client = Client::new();
         let res = client
             .get(&self.userinfo_url)
             .header("Authorization", format!("Bearer {}", token))
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         if status != 200 {
             return Ok(serde_json::Value::Null);
         }
-        let body = res.text().await?;
+        let body = res.text()?;
         let json: serde_json::Value = serde_json::from_str(&body).unwrap();
         Ok(json)
     }

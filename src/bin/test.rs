@@ -22,9 +22,8 @@ async fn main() -> std::io::Result<()> {
         .clone()
         .unwrap()
         .validate_token(token.clone())
-        .await
     {
-        Ok(token) => {
+        Ok((token, _value)) => {
             if token {
                 println!("token: {:?}", token)
             } else {
@@ -34,7 +33,7 @@ async fn main() -> std::io::Result<()> {
         Err(e) => println!("Error: {}", e),
     }
 
-    match oidc_handler.back.unwrap().get_user_info(token).await {
+    match oidc_handler.back.unwrap().get_user_info(token) {
         Ok(user_info) => {
             if !user_info.is_null() {
                 println!("user_info: {:?}", user_info)

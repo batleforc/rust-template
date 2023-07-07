@@ -99,7 +99,7 @@ pub async fn validate_otp(
         "User otp logged in, generating refresh_token"
     );
 
-    let refresh_token = match TokenClaims::new_tokens(user.id, true) {
+    let refresh_token = match TokenClaims::new_tokens(user.id, user.email.clone(), true) {
         Ok(token) => token,
         Err(err) => {
             tracing::error!(error = ?err,user = user.email.clone() ,"Error while generating token");
