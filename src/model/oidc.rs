@@ -1,5 +1,5 @@
 use super::oidc_token::OidcTokenClaim;
-use reqwest::blocking::Client;
+use reqwest::{blocking, Client};
 use serde::{Deserialize, Serialize};
 use std::env::VarError;
 
@@ -94,7 +94,7 @@ impl BackOidc {
         self,
         token: String,
     ) -> Result<(bool, serde_json::Value), reqwest::Error> {
-        let client = Client::new();
+        let client = blocking::Client::new();
         let mut oidc_token = OidcTokenClaim::new(self.client_id.clone(), self.issuer.clone());
         let token_oidc =
             match oidc_token.sign_token(self.key_id.clone(), self.client_secret.clone()) {
@@ -126,17 +126,18 @@ impl BackOidc {
         Ok((active, json))
     }
 
-    pub fn get_user_info(self, token: String) -> Result<serde_json::Value, reqwest::Error> {
+    pub async fn get_user_info(self, token: String) -> Result<serde_json::Value, reqwest::Error> {
         let client = Client::new();
         let res = client
             .get(&self.userinfo_url)
             .header("Authorization", format!("Bearer {}", token))
-            .send()?;
+            .send()
+            .await?;
         let status = res.status();
         if status != 200 {
             return Ok(serde_json::Value::Null);
         }
-        let body = res.text()?;
+        let body = res.text().await?;
         let json: serde_json::Value = serde_json::from_str(&body).unwrap();
         Ok(json)
     }
