@@ -15,7 +15,7 @@ pub struct AuthProtocol {
     pub icon: String,
 }
 
-#[derive(Serialize, Deserialize, ToSchema, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, ToSchema, Clone, PartialEq, Debug)]
 pub enum AuthType {
     Oidc,
     BuildIn,

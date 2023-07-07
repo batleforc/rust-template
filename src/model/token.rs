@@ -7,6 +7,7 @@ use utoipa::ToSchema;
 #[derive(ToSchema, Clone, Serialize, Deserialize)]
 pub struct TokenClaims {
     pub sub: uuid::Uuid, // subject
+    pub email: String,   // email
     pub exp: usize,      // expiration
     pub iat: usize,      // issued at
     pub iss: String,     // issuer
@@ -14,13 +15,14 @@ pub struct TokenClaims {
 }
 
 impl TokenClaims {
-    pub fn new_token_claims(user_id: uuid::Uuid, refresh: bool) -> TokenClaims {
+    pub fn new_token_claims(user_id: uuid::Uuid, email: String, refresh: bool) -> TokenClaims {
         let mut exp = chrono::Utc::now() + chrono::Duration::hours(1);
         if refresh {
             exp = chrono::Utc::now() + chrono::Duration::days(7);
         }
         TokenClaims {
             sub: user_id,
+            email,
             exp: exp.timestamp() as usize,
             iat: chrono::Utc::now().timestamp() as usize,
             iss: "Rust_api".to_string(),
@@ -57,8 +59,8 @@ impl TokenClaims {
             }
         }
     }
-    pub fn new_tokens(user_id: uuid::Uuid, refresh: bool) -> Result<String, String> {
-        let mut claims = TokenClaims::new_token_claims(user_id, refresh);
+    pub fn new_tokens(user_id: uuid::Uuid, email: String, refresh: bool) -> Result<String, String> {
+        let mut claims = TokenClaims::new_token_claims(user_id, email, refresh);
         claims.sign_token()
     }
     pub fn sign_token(&mut self) -> Result<String, String> {
