@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
         Err(e) => println!("Error: {}", e),
     }
 
-    match oidc_handler.back.unwrap().get_user_info(token) {
+    match oidc_handler.back.unwrap().get_user_info(token).await {
         Ok(user_info) => {
             if !user_info.is_null() {
                 println!("user_info: {:?}", user_info)
