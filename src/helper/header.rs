@@ -1,7 +1,9 @@
 use super::super::route::auth::info::AuthType;
 use actix_web::{http::header::ContentType, HttpRequest, HttpResponse};
 
-pub fn extract_authorization_header(req: &HttpRequest) -> Result<(&str, AuthType), HttpResponse> {
+pub fn extract_authorization_type_header(
+    req: &HttpRequest,
+) -> Result<(&str, AuthType), HttpResponse> {
     let header = req.headers();
     let token_type = match header.get("Authorization-type") {
         Some(token_type) => match token_type.to_str() {

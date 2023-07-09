@@ -10,7 +10,7 @@ use dotenvy::dotenv;
 use tokio_postgres::NoTls;
 use tracing_actix_web::{RequestId, TracingLogger};
 use utoipa::OpenApi;
-use utoipa_swagger_ui::SwaggerUi;
+use utoipa_swagger_ui::{oauth, SwaggerUi};
 
 mod helper;
 mod model;
@@ -50,12 +50,25 @@ async fn main() -> std::io::Result<()> {
             model::oidc::Oidc::new_disable()
         }
     };
+
     println!("Starting server on port {}", port);
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_method()
             .allow_any_header();
+
+        let swagger_ui = match oidc_handler.front.clone() {
+            Some(front) => SwaggerUi::new("/docs/{_:.*}")
+                .url("/docs/docs.json", openapi.clone())
+                .oauth(
+                    oauth::Config::new()
+                        .client_id(&front.client_id)
+                        .scopes(front.get_scope())
+                        .use_pkce_with_authorization_code_grant(true),
+                ),
+            None => SwaggerUi::new("/docs/{_:.*}").url("/docs/docs.json", openapi.clone()),
+        };
         App::new()
             .app_data(web::Data::new(dbpool.clone()))
             .app_data(web::Data::new(oidc_handler.clone()))
@@ -64,7 +77,7 @@ async fn main() -> std::io::Result<()> {
                 let fut = srv.call(req);
                 async move {
                     let mut res = fut.await?;
-                    let request_id = request_id_asc.await.unwrap();
+                    let request_id: RequestId = request_id_asc.await.unwrap();
                     let request_id_str = format!("{}", request_id);
                     let headers = res.headers_mut();
                     headers.insert(
@@ -80,7 +93,7 @@ async fn main() -> std::io::Result<()> {
             .service(health)
             .service(hello)
             .service(route::init::init_api())
-            .service(SwaggerUi::new("/docs/{_:.*}").url("/docs/docs.json", openapi.clone()))
+            .service(swagger_ui)
     })
     .bind(("0.0.0.0", port))?
     .run()

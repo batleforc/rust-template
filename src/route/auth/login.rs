@@ -51,8 +51,20 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
         async move {
             match User::get_one_by_mail(pool_swap.clone(), body_swap.email.clone()).await {
                 Ok(user) => {
-                    tracing::debug!(user = ?body_swap.email.clone() ,"User found");
-                    Ok(user)
+                    match user {
+                        Some(user) =>{
+                            if user.is_oauth{
+                                tracing::error!(user = ?body_swap.email.clone() ,"User is oauth");
+                                return Err(HttpResponse::Unauthorized().finish());
+                            }
+                            tracing::debug!(user = ?body_swap.email.clone() ,"User found");
+                            Ok(user)
+                        },
+                        None => {
+                            tracing::error!(user = ?body_swap.email.clone() ,"User not found");
+                            return Err(HttpResponse::Unauthorized().finish());
+                        }
+                    }
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?body_swap.email.clone() ,"Error while getting user");

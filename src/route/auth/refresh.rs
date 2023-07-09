@@ -37,7 +37,7 @@ pub async fn refresh(req: HttpRequest, db_pool: web::Data<Pool>) -> impl Respond
     let get_token_span = tracing::info_span!("Get Token in header");
     let (token, auth_type) =
         match get_token_span.in_scope(|| -> Result<(&str, AuthType), HttpResponse> {
-            header::extract_authorization_header(&req)
+            header::extract_authorization_type_header(&req)
         }) {
             Ok(token) => token,
             Err(err) => return err,

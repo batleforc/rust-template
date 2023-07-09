@@ -116,29 +116,31 @@ impl User {
     pub async fn get_one_by_mail(
         pool: deadpool_postgres::Pool,
         email: String,
-    ) -> Result<User, tokio_postgres::Error> {
+    ) -> Result<Option<User>, tokio_postgres::Error> {
         let client = pool.get().await.unwrap();
 
         let get_one = "
             SELECT id, email, password, nom, prenom, otp_secret, otp_url, otp_enabled,one_time_token, is_oauth, created_at, updated_at
             FROM users
             WHERE email = $1";
-        let row = client.query_one(get_one, &[&email]).await?;
-
-        Ok(User {
-            id: row.get(0),
-            email: row.get(1),
-            password: row.get(2),
-            nom: row.get(3),
-            prenom: row.get(4),
-            otp_secret: row.get(5),
-            otp_url: row.get(6),
-            otp_enabled: row.get(7),
-            one_time_token: row.get(8),
-            is_oauth: row.get(9),
-            created_at: row.get(10),
-            updated_at: row.get(11),
-        })
+        let row = client.query_opt(get_one, &[&email]).await?;
+        match row {
+            Some(row_content) => Ok(Some(User {
+                id: row_content.get(0),
+                email: row_content.get(1),
+                password: row_content.get(2),
+                nom: row_content.get(3),
+                prenom: row_content.get(4),
+                otp_secret: row_content.get(5),
+                otp_url: row_content.get(6),
+                otp_enabled: row_content.get(7),
+                one_time_token: row_content.get(8),
+                is_oauth: row_content.get(9),
+                created_at: row_content.get(10),
+                updated_at: row_content.get(11),
+            })),
+            None => Ok(None),
+        }
     }
 
     pub async fn get_one_by_one_time_token(
@@ -326,91 +328,100 @@ impl FromRequest for User {
     ) -> Self::Future {
         let req = req.clone();
         tracing::info!("Start auth middleware");
-        let get_token_span = tracing::info_span!("Auth: Get Token in header");
-        let (token, auth_type) =
-            match get_token_span.in_scope(|| -> Result<(&str, AuthType), HttpResponse> {
-                header::extract_authorization_header(&req)
-            }) {
-                Ok(token) => token,
-                Err(_) => {
-                    tracing::error!("Error while getting token");
-                    return Box::pin(async {
-                        Err(ErrorUnauthorized("Error lors de la récupération du token"))
-                    });
-                }
-            };
-        drop(get_token_span);
-        tracing::debug!("Token of type {:?} found", auth_type.to_string());
-
-        let email = match auth_type {
-            AuthType::Oidc => {
-                let oidc_handler = match req.app_data::<Oidc>() {
-                    Some(handler) => handler,
-                    None => {
-                        tracing::error!("Error while getting oidc handler");
-                        return Box::pin(async {
-                            Err(ErrorUnauthorized("Error avec la configuration OIDC"))
-                        });
+        Box::pin(async move {
+            let req = req.clone();
+            let get_token_span = tracing::info_span!("Auth: Get Token in header");
+            let (token, auth_type) =
+                match get_token_span.in_scope(|| -> Result<(&str, AuthType), HttpResponse> {
+                    header::extract_authorization_type_header(&req)
+                }) {
+                    Ok(token) => token,
+                    Err(_) => {
+                        tracing::error!("Error while getting token");
+                        return Err(ErrorUnauthorized("Error lors de la récupération du token"));
                     }
                 };
-                if oidc_handler.oidc_disabled {
-                    tracing::error!("OIDC is disabled");
-                    return Box::pin(async {
-                        Err(ErrorUnauthorized("OIDC est désactivé sur ce serveur"))
-                    });
-                }
-                let validate_token_span = tracing::info_span!("Auth: Validate Token (oidc)");
-                match validate_token_span.in_scope(
-                    || -> Result<(bool, serde_json::Value), reqwest::Error> {
-                        oidc_handler
+            drop(get_token_span);
+            tracing::debug!("Token of type {:?} found", auth_type.to_string());
+            let email_wrap = match auth_type {
+                AuthType::Oidc => {
+                    let oidc_handler = match req.app_data::<web::Data<Oidc>>() {
+                        Some(handler) => handler,
+                        None => {
+                            tracing::error!("Error while getting oidc handler");
+                            return Err(ErrorUnauthorized("Error avec la configuration OIDC"));
+                        }
+                    };
+                    if oidc_handler.oidc_disabled {
+                        tracing::error!("OIDC is disabled");
+                        return Err(ErrorUnauthorized("OIDC est désactivé sur ce serveur"));
+                    }
+                    tracing::debug!("OIDC config loaded");
+                    let validate_token_span = tracing::info_span!("Auth: Validate Token (oidc)");
+                    async move {
+                        match oidc_handler
                             .back
                             .clone()
                             .unwrap()
                             .validate_token(token.to_string())
-                    },
-                ) {
-                    Ok((valide, value)) => {
-                        if valide {
-                            value["email"].to_string()
-                        } else {
-                            return Box::pin(async {
-                                Err(ErrorUnauthorized("Error lors de la récupération du token"))
-                            });
-                        }
-                    }
-                    Err(err) => {
-                        tracing::error!(error = ?err, "Error while checking token with oidc");
-                        return Box::pin(async {
-                            Err(ErrorUnauthorized("Error lors de la récupération du token"))
-                        });
-                    }
-                }
-            }
-            AuthType::BuildIn => {
-                let validate_token_span = tracing::info_span!("Auth: Validate Token");
-                let claims =
-                    match validate_token_span.in_scope(|| -> Result<TokenClaims, String> {
-                        match TokenClaims::validate_token(token.to_string(), false) {
-                            Ok(claim) => Ok(claim),
-                            Err(err) => {
-                                tracing::error!(error = ?err, "Error while checking token");
-                                return Err("Invalid token".to_string());
+                            .await {
+                                Ok((valide, value)) => {
+                                    if valide {
+                                        let email = value["email"].to_string().replace("\"", "");
+                                        tracing::debug!(email=?email, "Token valide returning email");
+                                        Ok(email)
+                                    } else {
+                                        tracing::error!("Token invalide");
+                                        return Err(ErrorUnauthorized(
+                                            "Error lors de la récupération du token",
+                                        ));
+                                    }
+                                }
+                                Err(err) => {
+                                    tracing::error!(error = ?err, "Error while checking token with oidc");
+                                    return Err(ErrorUnauthorized(
+                                        "Error lors de la récupération du token",
+                                    ));
+                                }
                             }
-                        }
-                    }) {
-                        Ok(claim) => claim,
-                        Err(err) => return Box::pin(async { Err(ErrorUnauthorized(err)) }),
-                    };
-                drop(validate_token_span);
-                claims.sub.to_string()
-            }
-        };
-        Box::pin(async move {
+                    }
+                    .instrument(validate_token_span)
+                    .await
+                }
+                AuthType::BuildIn => {
+                    let validate_token_span = tracing::info_span!("Auth: Validate Token");
+                    let claims =
+                        match validate_token_span.in_scope(|| -> Result<TokenClaims, String> {
+                            match TokenClaims::validate_token(token.to_string(), false) {
+                                Ok(claim) => Ok(claim),
+                                Err(err) => {
+                                    tracing::error!(error = ?err, "Error while checking token");
+                                    return Err("Invalid token".to_string());
+                                }
+                            }
+                        }) {
+                            Ok(claim) => claim,
+                            Err(err) => return Err(ErrorUnauthorized(err)),
+                        };
+                    drop(validate_token_span);
+                    Ok(claims.sub.to_string())
+                }
+            };
+            let email = match email_wrap {
+                Ok(email) => email,
+                Err(err) => return Err(err),
+            };
             let check_user_span = tracing::info_span!("Auth: Check if user exists");
             let user = match async move {
                 let pool = req.app_data::<web::Data<Pool>>().unwrap();
                 match User::get_one_by_mail(pool.get_ref().clone(), email.clone()).await {
-                    Ok(user) => Ok(user),
+                    Ok(user) => match user {
+                        Some(user) => Ok(user),
+                        None => {
+                            tracing::error!("User not found");
+                            return Err(ErrorUnauthorized("Invalid token"));
+                        }
+                    },
                     Err(err) => {
                         tracing::error!(error = ?err, "Error while getting user");
                         return Err(ErrorUnauthorized("Invalid token"));

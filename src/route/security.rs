@@ -1,5 +1,7 @@
 use utoipa::{
-    openapi::security::{Http, HttpAuthScheme, SecurityScheme},
+    openapi::security::{
+        AuthorizationCode, Flow, Http, HttpAuthScheme, OAuth2, Scopes, SecurityScheme,
+    },
     Modify,
 };
 
@@ -17,8 +19,20 @@ impl Modify for SecurityAddon {
             SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
         );
         components.add_security_scheme(
-            "Oidc",
-            SecurityScheme::Http(Http::new(HttpAuthScheme::OAuth)),
+            "oidc",
+            SecurityScheme::OAuth2(OAuth2::with_description(
+                [Flow::AuthorizationCode(AuthorizationCode::new(
+                    "http://localhost:8080/oauth/v2/authorize",
+                    "http://localhost:8080/oauth/v2/token",
+                    Scopes::from_iter([
+                        ("openid", "Access auth (needed)"),
+                        ("profile", "Access profile (needed)"),
+                        ("email", "Access email (needed)"),
+                        ("offline_access", "Access offline (needed)"),
+                    ]),
+                ))],
+                "Zitadel dev",
+            )),
         )
     }
 }

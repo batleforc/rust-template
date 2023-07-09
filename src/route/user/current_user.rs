@@ -17,7 +17,8 @@ use actix_web::{get, HttpResponse, Responder};
     ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
   ),
   security(
-    ("access_token" = [])
+    ("access_token" = []),
+    ("oidc" = [])
   )
 )]
 #[get("")]
