@@ -16,12 +16,13 @@ async fn main() -> std::io::Result<()> {
         }
     };
     let token =
-        "wXX3BiK_EOhl_ripSPKLW8O_71KhwUWTAFBg0EbYIEcE_QMEomsozj7bS9Yy8ZmEBeAfRB8".to_string();
+        "Ps-mIH7mDrRJ3JbNlGIFu54jrygYPowTGlE0snA9mCDCbSMhq7aw9obeZ2BAFgeR5WPV8Bo".to_string();
     match oidc_handler
         .back
         .clone()
         .unwrap()
         .validate_token(token.clone())
+        .await
     {
         Ok((token, _value)) => {
             if token {
@@ -36,7 +37,9 @@ async fn main() -> std::io::Result<()> {
     match oidc_handler.back.unwrap().get_user_info(token).await {
         Ok(user_info) => {
             if !user_info.is_null() {
-                println!("user_info: {:?}", user_info)
+                println!("user_info: {:?}", user_info);
+                println!("user_info: {:?}", user_info);
+                println!("{}", user_info["email"].to_string());
             } else {
                 println!("Error while getting userinfo");
             }

@@ -35,6 +35,10 @@ pub async fn generate_otp(mut user: User, db_pool: web::Data<Pool>) -> impl Resp
         tracing::debug!(user = ?user.email ,"User already has otp enabled");
         return HttpResponse::BadRequest().finish();
     }
+    if user.is_oauth {
+        tracing::debug!(user = ?user.email ,"User is oauth");
+        return HttpResponse::BadRequest().finish();
+    }
     user.gen_otp_secret();
     let otp_object = match user.get_totp_obj() {
         Ok(otp) => otp,

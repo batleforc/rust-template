@@ -39,6 +39,10 @@ pub async fn activate_otp(
         tracing::debug!(user = ?user.email ,"User already has otp enabled");
         return HttpResponse::BadRequest().finish();
     }
+    if user.is_oauth {
+        tracing::debug!(user = ?user.email ,"User is oauth");
+        return HttpResponse::BadRequest().finish();
+    }
     let body = activate_otp.into_inner();
     match user.validate_otp(body.otp_code) {
         Ok(status) => {

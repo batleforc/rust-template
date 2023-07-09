@@ -5,3 +5,4 @@ pub mod logout;
 pub mod otp;
 pub mod refresh;
 pub mod register;
+pub mod register_oidc;

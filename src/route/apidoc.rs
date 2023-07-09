@@ -3,7 +3,7 @@ use utoipa::OpenApi;
 use super::auth::{
     info, login, logout,
     otp::{activate, generate, validate},
-    refresh, register,
+    refresh, register, register_oidc,
 };
 use super::health;
 use super::security::SecurityAddon;
@@ -43,6 +43,7 @@ use crate::model;
         generate::generate_otp,
         activate::activate_otp,
         validate::validate_otp,
+        register_oidc::register_oidc,
     ),
     components(
         schemas(

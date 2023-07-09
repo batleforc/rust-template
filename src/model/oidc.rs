@@ -1,5 +1,5 @@
 use super::oidc_token::OidcTokenClaim;
-use reqwest::{blocking, Client};
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::env::VarError;
 
@@ -90,11 +90,11 @@ impl Oidc {
 }
 
 impl BackOidc {
-    pub fn validate_token(
+    pub async fn validate_token(
         self,
         token: String,
     ) -> Result<(bool, serde_json::Value), reqwest::Error> {
-        let client = blocking::Client::new();
+        let client = Client::new();
         let mut oidc_token = OidcTokenClaim::new(self.client_id.clone(), self.issuer.clone());
         let token_oidc =
             match oidc_token.sign_token(self.key_id.clone(), self.client_secret.clone()) {
@@ -115,12 +115,13 @@ impl BackOidc {
                 ),
                 ("client_assertion", token_oidc),
             ])
-            .send()?;
+            .send()
+            .await?;
         let status = res.status();
         if status != 200 {
             return Ok((false, serde_json::Value::Null));
         }
-        let body = res.text()?;
+        let body = res.text().await?;
         let json: serde_json::Value = serde_json::from_str(&body).unwrap();
         let active = json["active"].as_bool().unwrap();
         Ok((active, json))
@@ -140,5 +141,11 @@ impl BackOidc {
         let body = res.text().await?;
         let json: serde_json::Value = serde_json::from_str(&body).unwrap();
         Ok(json)
+    }
+}
+
+impl FrontOidc {
+    pub fn get_scope(&self) -> Vec<String> {
+        self.scopes.split(" ").map(|s| s.to_string()).collect()
     }
 }

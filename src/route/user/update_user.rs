@@ -20,7 +20,8 @@ use tracing::Instrument;
     ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
   ),
   security(
-    ("access_token" = [])
+    ("access_token" = []),
+    ("oidc" = [])
   )
 )]
 #[put("")]

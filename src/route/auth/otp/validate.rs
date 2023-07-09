@@ -58,6 +58,10 @@ pub async fn validate_otp(
         tracing::debug!(user = ?user.email ,"Otp not enabled");
         return HttpResponse::BadRequest().finish();
     }
+    if user.is_oauth {
+        tracing::debug!(user = ?user.email ,"User is oauth");
+        return HttpResponse::BadRequest().finish();
+    }
 
     match user.validate_otp(body.otp_code.clone()) {
         Ok(status) => {

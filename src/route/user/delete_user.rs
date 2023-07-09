@@ -16,7 +16,8 @@ use tracing::Instrument;
       (status = 500, description = "Internal server error"),
   ),
   security(
-    ("access_token" = [])
+    ("access_token" = []),
+    ("oidc" = [])
   ),
   params(
     ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
