@@ -76,7 +76,7 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 - [ ] Create a container for the api
 - [ ] Create a helm chart
 - [ ] Integrate the CI/CD pipeline
-- [ ] Add support for OIDC
+- [x] Add support for OIDC
 - [ ] Create a vue3 template with model auto generation
 - [ ] Integrate the api with S3 (asset endpoint)
 - [ ] Make the code more KISS (Keep it simple stupid)
@@ -95,12 +95,12 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 ### TODO : OIDC
 
-- [ ] Enable/Disable OIDC
+- [x] Enable/Disable OIDC
 - [ ] Add the OIDC config in the helm chart
-- [ ] Add endpoint to authenticate user with OIDC
-- [ ] Handle case where the user log for the first time
-- [ ] Handle case where the email is already used
-- [ ]
+- [x] Add endpoint to authenticate user with OIDC
+- [x] Handle case where the user log for the first time
+- [x] Handle case where the email is already used
+- [ ] Handle the role workflow
 
 ### TODO : True backoffice
 
