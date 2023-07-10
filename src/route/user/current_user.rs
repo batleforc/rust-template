@@ -14,7 +14,7 @@ use actix_web::{get, HttpResponse, Responder};
       (status = 500, description = "Internal server error"),
   ),
   params(
-    ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
+    ("Authorization-type" = AuthType, Header, description = "Type de token (oidc ou buildin)")
   ),
   security(
     ("access_token" = []),

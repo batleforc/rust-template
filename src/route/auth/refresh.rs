@@ -26,7 +26,7 @@ pub struct RefreshTokenReturn {
     (status = 200, description = "Token body", body = RefreshTokenReturn)
   ),
   params(
-    ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
+    ("Authorization-type" = AuthType, Header, description = "Type de token (oidc ou buildin)")
   ),
   security(
     ("refresh_token" = [])

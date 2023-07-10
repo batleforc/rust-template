@@ -22,7 +22,7 @@ use tracing::Instrument;
         ("oidc" = [])
     ),
     params(
-        ("Authorization-type" = String, Header, description = "Type de token (oidc ou buildin)")
+        ("Authorization-type" = AuthType, Header, description = "Type de token (oidc ou buildin)")
     ),
 )]
 #[post("/register_oidc")]
