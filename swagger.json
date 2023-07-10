@@ -133,6 +133,17 @@
         "summary": "Start the totp activate process",
         "description": "Start the totp activate process",
         "operationId": "generate",
+        "parameters": [
+          {
+            "name": "Authorization-type",
+            "in": "header",
+            "description": "Type de token (oidc ou buildin)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "QrCode",
@@ -165,6 +176,17 @@
         "summary": "End the totp activate process",
         "description": "End the totp activate process",
         "operationId": "activate",
+        "parameters": [
+          {
+            "name": "Authorization-type",
+            "in": "header",
+            "description": "Type de token (oidc ou buildin)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -241,6 +263,17 @@
         "summary": "Refresh token",
         "description": "Refresh token\n\nThis endpoint is used to get access token from refresh token",
         "operationId": "refresh",
+        "parameters": [
+          {
+            "name": "Authorization-type",
+            "in": "header",
+            "description": "Type de token (oidc ou buildin)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Token body",
@@ -300,6 +333,63 @@
         "deprecated": false
       }
     },
+    "/api/auth/register_oidc": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "register_oidc",
+        "parameters": [
+          {
+            "name": "Authorization-type",
+            "in": "header",
+            "description": "Type de token (oidc ou buildin)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Register oidc user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access denied",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Possible internal server error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "oidc": []
+          }
+        ]
+      }
+    },
     "/api/user": {
       "get": {
         "tags": [
@@ -308,6 +398,17 @@
         "summary": "Get current user",
         "description": "Get current user\n\nGet current user based on the token",
         "operationId": "getuser",
+        "parameters": [
+          {
+            "name": "Authorization-type",
+            "in": "header",
+            "description": "Type de token (oidc ou buildin)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "User",
@@ -330,6 +431,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "oidc": []
           }
         ]
       },
@@ -340,6 +444,17 @@
         "summary": "Update current user",
         "description": "Update current user\n\nUpdate current user based on the token",
         "operationId": "updateuser",
+        "parameters": [
+          {
+            "name": "Authorization-type",
+            "in": "header",
+            "description": "Type de token (oidc ou buildin)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -372,6 +487,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "oidc": []
           }
         ]
       },
@@ -382,6 +500,17 @@
         "summary": "Delete current user",
         "description": "Delete current user\n\nDelete current user based on the token",
         "operationId": "deleteuser",
+        "parameters": [
+          {
+            "name": "Authorization-type",
+            "in": "header",
+            "description": "Type de token (oidc ou buildin)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "success"
@@ -397,6 +526,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "oidc": []
           }
         ]
       }
@@ -418,6 +550,15 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "Authorization-type",
+            "in": "header",
+            "description": "Type de token (oidc ou buildin)",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -443,6 +584,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "oidc": []
           }
         ]
       }
@@ -496,6 +640,9 @@
           "name": {
             "type": "string"
           },
+          "oidc_param": {
+            "$ref": "#/components/schemas/FrontOidc"
+          },
           "type_auth": {
             "$ref": "#/components/schemas/AuthType"
           }
@@ -525,6 +672,37 @@
           "Oidc",
           "BuildIn"
         ]
+      },
+      "FrontOidc": {
+        "type": "object",
+        "required": [
+          "client_id",
+          "token_url",
+          "auth_url",
+          "issuer",
+          "scopes",
+          "redirect_uri"
+        ],
+        "properties": {
+          "auth_url": {
+            "type": "string"
+          },
+          "client_id": {
+            "type": "string"
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "redirect_uri": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "string"
+          },
+          "token_url": {
+            "type": "string"
+          }
+        }
       },
       "GenOtp": {
         "type": "object",
@@ -666,7 +844,8 @@
           "prenom",
           "otp_enabled",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "is_oauth"
         ],
         "properties": {
           "created_at": {
@@ -679,6 +858,9 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "is_oauth": {
+            "type": "boolean"
           },
           "nom": {
             "type": "string"
@@ -726,6 +908,22 @@
       "access_token": {
         "type": "http",
         "scheme": "bearer"
+      },
+      "oidc": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "http://localhost:8080/oauth/v2/authorize",
+            "tokenUrl": "http://localhost:8080/oauth/v2/token",
+            "scopes": {
+              "email": "Access email (needed)",
+              "offline_access": "Access offline (needed)",
+              "openid": "Access auth (needed)",
+              "profile": "Access profile (needed)"
+            }
+          }
+        },
+        "description": "Zitadel dev"
       },
       "refresh_token": {
         "type": "http",
