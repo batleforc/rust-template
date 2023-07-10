@@ -8,9 +8,9 @@ pub fn extract_authorization_type_header(
     let token_type = match header.get("Authorization-type") {
         Some(token_type) => match token_type.to_str() {
             Ok(token_type) => {
-                if token_type.eq("oidc") {
+                if token_type.to_lowercase().eq("oidc") {
                     AuthType::Oidc
-                } else if token_type.eq("buildin") {
+                } else if token_type.to_lowercase().eq("buildin") {
                     AuthType::BuildIn
                 } else {
                     return Err(HttpResponse::Unauthorized()

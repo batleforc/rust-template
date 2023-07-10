@@ -1,4 +1,5 @@
-use actix_web::{get, HttpResponse, Responder};
+use crate::model::oidc::{FrontOidc, Oidc};
+use actix_web::{get, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -13,6 +14,8 @@ pub struct AuthProtocol {
     pub type_auth: AuthType,
     pub name: String,
     pub icon: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub oidc_param: Option<FrontOidc>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, PartialEq, Debug)]
@@ -42,14 +45,24 @@ impl AuthType {
   )
 )]
 #[get("")]
-pub async fn auth_status() -> impl Responder {
+pub async fn auth_status(oidc_handler: web::Data<Oidc>) -> impl Responder {
     tracing::debug!("Asking for api auth status");
+    let mut auth_possible = vec![AuthProtocol {
+        type_auth: AuthType::BuildIn,
+        name: "Main".to_string(),
+        icon: "".to_string(),
+        oidc_param: None,
+    }];
+    if !oidc_handler.oidc_disabled {
+        auth_possible.push(AuthProtocol {
+            type_auth: AuthType::Oidc,
+            name: "Oidc".to_string(),
+            icon: "".to_string(),
+            oidc_param: oidc_handler.front.clone(),
+        });
+    }
     HttpResponse::Ok().json(AuthStatus {
         can_register: true,
-        enabled_protocol: vec![AuthProtocol {
-            type_auth: AuthType::BuildIn,
-            name: "Main".to_string(),
-            icon: "".to_string(),
-        }],
+        enabled_protocol: auth_possible,
     })
 }
