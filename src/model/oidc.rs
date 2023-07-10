@@ -2,6 +2,7 @@ use super::oidc_token::OidcTokenClaim;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::env::VarError;
+use utoipa::ToSchema;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct BackOidc {
@@ -15,7 +16,7 @@ pub struct BackOidc {
     pub key_id: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, ToSchema)]
 pub struct FrontOidc {
     pub client_id: String,
     pub token_url: String,

@@ -1,5 +1,6 @@
 use utoipa::OpenApi;
 
+use super::super::model::oidc;
 use super::auth::{
     info, login, logout,
     otp::{activate, generate, validate},
@@ -62,6 +63,7 @@ use crate::model;
             info::AuthStatus,
             info::AuthProtocol,
             info::AuthType,
+            oidc::FrontOidc,
         )
     ),
     modifiers(&SecurityAddon)
