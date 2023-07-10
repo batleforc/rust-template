@@ -140,7 +140,7 @@
             "description": "Type de token (oidc ou buildin)",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/AuthType"
             }
           }
         ],
@@ -183,7 +183,7 @@
             "description": "Type de token (oidc ou buildin)",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/AuthType"
             }
           }
         ],
@@ -270,7 +270,7 @@
             "description": "Type de token (oidc ou buildin)",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/AuthType"
             }
           }
         ],
@@ -346,7 +346,7 @@
             "description": "Type de token (oidc ou buildin)",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/AuthType"
             }
           }
         ],
@@ -405,7 +405,7 @@
             "description": "Type de token (oidc ou buildin)",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/AuthType"
             }
           }
         ],
@@ -451,7 +451,7 @@
             "description": "Type de token (oidc ou buildin)",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/AuthType"
             }
           }
         ],
@@ -507,7 +507,7 @@
             "description": "Type de token (oidc ou buildin)",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/AuthType"
             }
           }
         ],
@@ -558,7 +558,7 @@
             "description": "Type de token (oidc ou buildin)",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/AuthType"
             }
           }
         ],
