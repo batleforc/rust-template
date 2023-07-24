@@ -12,8 +12,8 @@ spec:
           params:
             - name: secretRef
               value:
-                secretName: github-interceptor-secret
-                secretKey: {{.Values.config.prefix}}-github-secret
+                secretName: {{.Values.config.prefix}}-github-secret
+                secretKey: secretToken
             - name: eventTypes
               value:
                 - push
