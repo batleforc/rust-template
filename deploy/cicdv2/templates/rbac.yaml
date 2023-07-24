@@ -42,11 +42,11 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  namespace: {{.Values.config.prefix}}-sa
   name: {{.Values.config.prefix}}-sa-binding-2
 subjects:
   - kind: ServiceAccount
     name: {{.Values.config.prefix}}-sa
+    namespace: {{.Release.Namespace}}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -59,6 +59,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: {{.Values.config.prefix}}-sa
+    namespace:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -68,6 +69,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{.Values.config.prefix}}-sa
-  annotations:
+  annotations: {{.Release.Namespace}}
     kubernetes.io/service-account.name: {{.Values.config.prefix}}-sa
 type: kubernetes.io/service-account-token
