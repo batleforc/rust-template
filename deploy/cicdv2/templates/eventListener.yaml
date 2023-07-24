@@ -1,0 +1,32 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: {{.Values.config.prefix}}-event-listener
+spec:
+  serviceAccountName: {{.Values.config.prefix}}-sa
+  triggers:
+    - name: {{.Values.config.prefix}}-trigger
+      interceptors:
+        - ref:
+            name: "github"
+          params:
+            - name: secretRef
+              value:
+                secretName: github-interceptor-secret
+                secretKey: {{.Values.config.prefix}}-github-secret
+            - name: eventTypes
+              value:
+                - push
+        - ref:
+            name: "cel"
+          params:
+            - name: filter
+              value: "body.ref.startsWith('refs/heads/')"
+            - name: overlays
+              value:
+                - key: branch_name
+                  expression: "body.ref.split('/')[2]"
+      bindings:
+        - ref: {{.Values.config.prefix}}-trigger-binding
+      template:
+        ref: {{.Values.config.prefix}}-pipeline-template

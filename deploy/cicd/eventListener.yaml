@@ -1,0 +1,33 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: bpg-event-listener
+  namespace: batleforc-template-rust
+spec:
+  serviceAccountName: batleforc-template-rust
+  triggers:
+    - name: bpg-trigger
+      interceptors:
+        - ref:
+            name: "github"
+          params:
+            - name: secretRef
+              value:
+                secretName: github-interceptor-secret
+                secretKey: secretToken
+            - name: eventTypes
+              value:
+                - push
+        - ref:
+            name: "cel"
+          params:
+            - name: filter
+              value: "body.ref.startsWith('refs/heads/')"
+            - name: overlays
+              value:
+                - key: branch_name
+                  expression: "body.ref.split('/')[2]"
+      bindings:
+        - ref: bpg-trigger-binding
+      template:
+        ref: bpg-pipeline-template

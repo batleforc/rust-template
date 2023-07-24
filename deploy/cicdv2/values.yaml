@@ -1,0 +1,8 @@
+config:
+  prefix: tpl-rust
+  name: batleforc
+  ingress:
+    class: haproxy
+    domain: webhook.weebo.fr
+  registry:
+    imageName: template/template-rust

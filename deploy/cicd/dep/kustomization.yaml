@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: batleforc-portfolio
+resources:
+  - https://raw.githubusercontent.com/tektoncd/catalog/main/task/gitleaks/0.1/gitleaks.yaml
+  - https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.8/git-clone.yaml
+  - https://raw.githubusercontent.com/tektoncd/catalog/main/task/kubernetes-actions/0.2/kubernetes-actions.yaml
+  - helm-upgrade-from-source.yaml
