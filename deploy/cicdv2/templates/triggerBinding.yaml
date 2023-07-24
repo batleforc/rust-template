@@ -1,7 +1,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
-  name: {{.Values.config.prefix}}-binding
+  name: {{.Values.config.prefix}}-trigger-binding
 spec:
   params:
     - name: gitrepositoryurl
