@@ -75,7 +75,7 @@ Secu : <https://github.com/juhaku/utoipa/blob/master/examples/todo-actix/src/tod
 
 - [ ] Create a container for the api
 - [ ] Create a helm chart
-- [ ] Integrate the CI/CD pipeline
+- [ ] Integrate the CI/CD pipeline (Working on it)
 - [x] Add support for OIDC
 - [ ] Create a vue3 template with model auto generation
 - [ ] Integrate the api with S3 (asset endpoint)
