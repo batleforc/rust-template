@@ -34,7 +34,7 @@ spec:
               secretName: harbor-auth
           - name: kubeconfig
             secret:
-              secretName: name: kubeconfig
+              secretName: kubeconfig
         params:
           - name: repo-revision
             value: $(tt.params.gitrevision)
