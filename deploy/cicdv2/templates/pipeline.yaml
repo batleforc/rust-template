@@ -1,0 +1,90 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: {{.Values.config.prefix}}-pipeline
+spec:
+  description: |
+    This pipeline builds batleforc template-rust.
+  params:
+    - name: repo-url
+      type: string
+      description: The git repo URL to clone from.
+    - name: repo-branch
+      type: string
+      default: main
+      description: The git repo branch to clone from.
+    - name: repo-revision
+      type: string
+      default: main
+      description: The git repo revision to clone from.
+  workspaces:
+    - name: shared-data
+      description: |
+        This workspace contains the cloned repo files, so they can be read by the
+        next task.
+    - name: dockerconfig
+      description: |
+        This workspace contains the docker config.json file, so it can be used by
+        the next task.
+    - name: kubeconfig
+      description: |
+        This workspace contains the kubeconfig file, it define the namespace to rollout.
+  tasks:
+    - name: fetch-source
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-data
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.repo-revision)
+    - name: build-docker
+      runAfter: ["fetch-source"]
+      taskRef:
+        name: build
+      workspaces:
+        - name: shared-data
+          workspace: shared-data
+        - name: dockerconfig
+          workspace: dockerconfig
+      params:
+        - name: path-dockerfile
+          value: .
+        - name: context-dockerfile
+          value: .
+        - name: IMAGE
+          value: {{.Values.config.registry.imageName}}
+        - name: repo-branch
+          value: $(params.repo-branch)
+    - name: helm-upgrade
+      runAfter: ["build-docker"]
+      taskRef:
+        name: helm-upgrade-from-source
+      workspaces:
+        - name: source
+          workspace: shared-data
+        - name: kubeconfig-dir
+          workspace: kubeconfig
+      params:
+        - name: charts_dir
+          value: ./deploy/helm
+        - name: release_name
+          value: $(params.repo-branch)
+        - name: release_namespace
+          value: {{.Release.Namespace}}
+        - name: overwrite_values
+          value: "branch.actual=$(params.repo-branch)"
+    #- name: rollout
+    #  runAfter: ["build-docker"]
+    #  taskRef:
+    #    name: kubernetes-actions
+    #  workspaces:
+    #    - name: kubeconfig-dir
+    #      workspace: kubeconfig
+    #  params:
+    #    - name: script
+    #      value: |
+    #        kubectl rollout restart deploy prod-client -n batleforc-portfolio

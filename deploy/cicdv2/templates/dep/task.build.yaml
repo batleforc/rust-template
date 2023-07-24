@@ -1,0 +1,56 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build
+spec:
+  description: |
+    This task builds all dockerfile in a repo based on a yaml file.
+  workspaces:
+    - name: shared-data
+      description: |
+        This workspace contains the cloned repo files, so they can be read by the
+        next task.
+    - name: dockerconfig
+      description: |
+        This workspace contains the docker config.json file, so it can be used by
+        the next task.
+  params:
+    - name: registrydns
+      type: string
+      description: The registry dns name.
+      default: harbor.weebo.fr
+    - name: buildctl_tcp
+      type: string
+      description: The buildctl tcp address.
+      default: tcp://buildkitd.buildkit.svc.cluster.local:1234
+    - name: repo-branch
+      type: string
+      description: The git repo branch to clone from.
+      default: main
+    - name: path-dockerfile
+      type: string
+      description: The folder where the dockerfile are.
+      default: .
+    - name: context-dockerfile
+      type: string
+      description: The context where the dockerfile are.
+      default: .
+    - name: DOCKERFILE
+      type: string
+      description: The dockerfile to build.
+      default: Dockerfile
+    - name: IMAGE
+      type: string
+      description: The image name to build (repo/imagename).
+  steps:
+    - image: harbor.weebo.fr/cache/moby/buildkit:v0.11.4
+      name: build-all
+      env:
+        - name: DOCKER_CONFIG
+          value: $(workspaces.dockerconfig.path)
+      workingDir: $(workspaces.shared-data.path)
+      script: |
+        #!/usr/bin/env ash
+        buildctl --addr $(params.buildctl_tcp) build --progress=plain --frontend dockerfile.v0 --local context=$(params.context-dockerfile) --local dockerfile=$(params.path-dockerfile) --opt filename=$(params.DOCKERFILE) --output type=image,name=$(params.registrydns)/$(params.IMAGE):$(params.repo-branch),push=true
+
+# https://tekton.dev/docs/pipelines/tasks/#specifying-workspaces

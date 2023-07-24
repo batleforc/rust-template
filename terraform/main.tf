@@ -105,10 +105,10 @@ resource "zitadel_application_oidc" "frontend" {
   project_id                  = zitadel_project.rust_template.id
   org_id                      = zitadel_org.dev.id
   name                        = "frontend"
-  redirect_uris               = ["http://localhost:5000", "http://localhost:5000/oauth2/callback", "http://localhost:5000/api/oauth2/callback", "https://oauth.pstmn.io/v1/callback"]
+  redirect_uris               = ["http://localhost:5173", "http://localhost:5173/oauth2/callback", "http://localhost:5173/api/oauth2/callback", "https://oauth.pstmn.io/v1/callback"]
   response_types              = ["OIDC_RESPONSE_TYPE_CODE"]
   grant_types                 = ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE"]
-  post_logout_redirect_uris   = ["http://localhost:5000/api/oauth2/logout"]
+  post_logout_redirect_uris   = ["http://localhost:5173/api/oauth2/logout"]
   app_type                    = "OIDC_APP_TYPE_WEB"
   auth_method_type            = "OIDC_AUTH_METHOD_TYPE_NONE"
   dev_mode                    = true
@@ -116,7 +116,7 @@ resource "zitadel_application_oidc" "frontend" {
   access_token_role_assertion = true
   id_token_role_assertion     = true
   id_token_userinfo_assertion = true
-  additional_origins          = ["http://localhost:5437", "https://oauth.pstmn.io"]
+  additional_origins          = ["http://localhost:5173", "https://oauth.pstmn.io"]
 }
 
 resource "local_file" "front_template_key" {

@@ -1,0 +1,61 @@
+# Configmap containing Terraform file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: terraform-sa
+data:
+  main.tf: |
+    terraform {
+      required_providers {
+        harbor = {
+          source  = "goharbor/harbor"
+          version = "3.9.4"
+        }
+        kubernetes = {
+          source  = "hashicorp/kubernetes"
+          version = "2.22.0"
+        }
+      }
+    }
+
+    variable "kubepath" {
+      type    = string
+      default = "/var/run/secrets/kubernetes.io/serviceaccount"
+    }
+
+    provider "kubernetes" {
+      host                   = "https://kubernetes.default.svc"
+      token                  = file("${var.kubepath}/token")
+      cluster_ca_certificate = file("${var.kubepath}/ca.crt")
+    }
+
+    resource "kubernetes_secret_v1" "kubeconfig" {
+      metadata {
+        name      = "kubeconfig"
+        namespace = "{{.Release.Namespace}}"
+      }
+      data = {
+        "kubeconfig" = <<EOF
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - name: tpl
+        cluster:
+          certificate-authority-data: >-
+            ${file("${var.kubepath}/ca.crt")}
+          server: https://kubernetes.default.svc
+    users:
+      - name: tpl
+        user:
+          token: >-
+            ${file("${var.kubepath}/token")}
+    contexts:
+      - name: tpl
+        context:
+          user: tpl
+          cluster: tpl
+          namespace: {{.Release.Namespace}}
+    current-context: tpl
+        EOF
+      }
+    }
