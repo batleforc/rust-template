@@ -35,6 +35,11 @@ spec:
           - name: kubeconfig
             secret:
               secretName: kubeconfig
+          {{- if .Values.config.sonarqube.useToken }}
+          - name: sonarqube
+            secret:
+              secretName: {{.Values.config.prefix}}-sonarqube
+          {{ end }}
         params:
           - name: repo-revision
             value: $(tt.params.gitrevision)

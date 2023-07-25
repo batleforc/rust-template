@@ -29,6 +29,11 @@ spec:
     - name: kubeconfig
       description: |
         This workspace contains the kubeconfig file, it define the namespace to rollout.
+    {{- if .Values.config.sonarqube.useToken }}
+    - name: sonarqube
+      description: |
+        This workspace contains the sonarqube credentials.
+    {{- end }}
   tasks:
     - name: fetch-source
       taskRef:
@@ -59,8 +64,34 @@ spec:
           value: {{.Values.config.registry.imageName}}
         - name: repo-branch
           value: $(params.repo-branch)
-    - name: helm-upgrade
+    {{ if .Values.config.sonarqube.enabled }}
+    - name: sonarqube-scan
       runAfter: ["build-docker"]
+      taskRef:
+        name: sonarqube-scanner
+      workspaces:
+        - name: source
+          workspace: shared-data
+      {{ if .Values.config.sonarqube.useToken }}
+        - name: sonar-credentials
+          workspace: sonarqube
+      {{ end }}
+      params:
+        - name: SONAR_HOST_URL
+          value: {{.Values.config.sonarqube.host}}
+        - name: SONAR_SCANNER_IMAGE
+          value: {{.Values.config.sonarqube.image}}
+      {{ if .Values.config.sonarqube.useToken }}
+        - name: SONAR_TOKEN_KEY
+          value: token
+      {{ end }}
+    {{ end }}
+    - name: helm-upgrade
+    {{ if .Values.config.sonarqube.enabled }}
+      runAfter: ["sonarqube-scan"]
+    {{ else }}
+      runAfter: ["build-docker"]
+    {{ end }}
       taskRef:
         name: helm-upgrade-from-source
       workspaces:
