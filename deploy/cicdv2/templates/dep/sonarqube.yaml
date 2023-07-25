@@ -162,4 +162,7 @@ spec:
       image: $(params.SONAR_SCANNER_IMAGE)
       workingDir: $(workspaces.source.path)
       command:
+        {{- range .Values.config.sonarqube.additionalScript}}
+        - {{.}}
+        {{- end}}
         - sonar-scanner
