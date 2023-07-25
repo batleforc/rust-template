@@ -6,3 +6,8 @@ config:
     domain: webhook.weebo.fr
   registry:
     imageName: template/template-rust
+  sonarqube:
+    enabled: true
+    host: qube.weebo.fr
+    image: harbor.weebo.fr/sonar/rust:v1.17.1
+    useToken: true
