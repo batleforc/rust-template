@@ -12,5 +12,5 @@ FROM alpine:3.17
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/app /app/app
+COPY --from=builder /app/target/release/api /app/api
 CMD ["app"]
