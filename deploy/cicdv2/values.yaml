@@ -11,3 +11,5 @@ config:
     host: qube.weebo.fr
     image: harbor.weebo.fr/sonar/rust:v1.17.1
     useToken: true
+    additionalScript:
+      - cargo clippy --message-format=json &> clippy-report.json
