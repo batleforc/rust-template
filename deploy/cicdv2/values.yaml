@@ -12,4 +12,4 @@ config:
     image: harbor.weebo.fr/sonar/rust:v1.17.2
     useToken: true
     additionalScript:
-      - cargo clippy --message-format=json &> clippy-report.json
+      - /bin/ash cargo clippy --message-format=json &> clippy-report.json

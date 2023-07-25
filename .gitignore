@@ -20,3 +20,4 @@ override.tf.json
 *.tfvars.json
 crash.log
 crash.*.log
+clippy-report.json
