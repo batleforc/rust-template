@@ -273,7 +273,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "api"
+name = "api2"
 version = "0.1.0"
 dependencies = [
  "actix-cors",
