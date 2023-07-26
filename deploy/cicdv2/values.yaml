@@ -9,8 +9,11 @@ config:
   sonarqube:
     enabled: true
     host: https://qube.weebo.fr
-    image: harbor.weebo.fr/sonar/rust:v1.17.3
+    image: harbor.weebo.fr/sonar/rust:v1.17.4
     useToken: true
     additionalScript: |
       set -ex
       cargo clippy --message-format=json > clippy-report.json
+      cargo audit --json > audit-report.json
+      cargo outdated --depth 1 --format json > outdated-report.json
+      cargo sonar --issues clippy,audit,outdated --clippy-path clippy-report.json --audit-path audit-report.json --outdated-path outdated-report.json
