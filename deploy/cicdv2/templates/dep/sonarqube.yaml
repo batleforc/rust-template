@@ -156,6 +156,7 @@ spec:
           if [[ -f $(workspaces.sonar-credentials.path)/$(params.SONAR_TOKEN_KEY) ]]; then
             SONAR_TOKEN=`cat $(workspaces.sonar-credentials.path)/$(params.SONAR_TOKEN_KEY)`
             replaceValues $(workspaces.source.path)/sonar-project.properties sonar.token "${SONAR_TOKEN}"
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.login "${SONAR_TOKEN}"
           fi
         fi
     {{- if .Values.config.sonarqube.additionalScript}}
