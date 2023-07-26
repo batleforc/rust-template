@@ -46,27 +46,27 @@ spec:
           value: $(params.repo-url)
         - name: revision
           value: $(params.repo-revision)
-    - name: build-docker
-      runAfter: ["fetch-source"]
-      taskRef:
-        name: build
-      workspaces:
-        - name: shared-data
-          workspace: shared-data
-        - name: dockerconfig
-          workspace: dockerconfig
-      params:
-        - name: path-dockerfile
-          value: .
-        - name: context-dockerfile
-          value: .
-        - name: IMAGE
-          value: {{.Values.config.registry.imageName}}
-        - name: repo-branch
-          value: $(params.repo-branch)
+    #- name: build-docker
+    #  runAfter: ["fetch-source"]
+    #  taskRef:
+    #    name: build
+    #  workspaces:
+    #    - name: shared-data
+    #      workspace: shared-data
+    #    - name: dockerconfig
+    #      workspace: dockerconfig
+    #  params:
+    #    - name: path-dockerfile
+    #      value: .
+    #    - name: context-dockerfile
+    #      value: .
+    #    - name: IMAGE
+    #      value: {{.Values.config.registry.imageName}}
+    #    - name: repo-branch
+    #      value: $(params.repo-branch)
     {{ if .Values.config.sonarqube.enabled }}
     - name: sonarqube-scan
-      runAfter: ["build-docker"]
+      runAfter: ["fetch-source"]
       taskRef:
         name: sonarqube-scanner
       workspaces:
