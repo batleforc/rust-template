@@ -158,11 +158,17 @@ spec:
             replaceValues $(workspaces.source.path)/sonar-project.properties sonar.token "${SONAR_TOKEN}"
           fi
         fi
+    {{- if .Values.config.sonarqube.additionalScript}}}
+    - name: prepare-cli
+      image: $(params.SONAR_SCANNER_IMAGE)
+      workingDir: $(workspaces.source.path)
+      command:
+      {{- range .Values.config.sonarqube.additionalScript}}
+        - {{.}}
+      {{- end}}
+    {{- end}}
     - name: sonar-scan
       image: $(params.SONAR_SCANNER_IMAGE)
       workingDir: $(workspaces.source.path)
       command:
-        {{- range .Values.config.sonarqube.additionalScript}}
-        - {{.}}
-        {{- end}}
         - sonar-scanner
