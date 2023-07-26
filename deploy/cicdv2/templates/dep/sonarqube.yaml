@@ -162,10 +162,8 @@ spec:
     - name: prepare-cli
       image: $(params.SONAR_SCANNER_IMAGE)
       workingDir: $(workspaces.source.path)
-      command:
-      {{- range .Values.config.sonarqube.additionalScript}}
-        - {{.}}
-      {{- end}}
+      script: |
+        {{- .Values.config.sonarqube.additionalScript | nindent 8}}
     {{- end}}
     - name: sonar-scan
       image: $(params.SONAR_SCANNER_IMAGE)
