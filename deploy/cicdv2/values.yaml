@@ -13,4 +13,4 @@ config:
     useToken: true
     additionalScript: |
       set -ex
-      cargo clippy --message-format=json &> clippy.json
+      cargo clippy
