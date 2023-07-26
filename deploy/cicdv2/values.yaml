@@ -9,7 +9,7 @@ config:
   sonarqube:
     enabled: true
     host: https://qube.weebo.fr
-    image: harbor.weebo.fr/sonar/rust:v1.17.6
+    image: harbor.weebo.fr/sonar/rust:v1.17.8
     useToken: true
     additionalScript: |
       set -ex
