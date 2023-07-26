@@ -12,4 +12,6 @@ config:
     image: harbor.weebo.fr/sonar/rust:v1.17.2
     useToken: true
     additionalScript:
+      - /bin/sh -c "echo 'HELLO WORLD'"
+      - /bin/sh -c "cargo clippy"
       - cargo clippy
