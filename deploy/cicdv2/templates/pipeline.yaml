@@ -107,4 +107,4 @@ spec:
         - name: release_namespace
           value: {{.Release.Namespace}}
         - name: overwrite_values
-          value: "branch.actual=$(params.repo-branch)"
+          value: "branch=$(params.repo-branch)"
