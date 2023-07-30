@@ -48,7 +48,7 @@ data:
       - name: tpl
         user:
           token: >-
-            ${indent(8, file("${var.kubepath}/token"))
+            ${indent(8, file("${var.kubepath}/token"))}
     contexts:
       - name: tpl
         context:
