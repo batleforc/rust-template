@@ -175,3 +175,5 @@ spec:
       workingDir: $(workspaces.source.path)
       command:
         - sonar-scanner
+
+# TODO: mise en place result https://tekton.dev/docs/pipelines/tasks/#emitting-results https://tekton.dev/docs/pipelines/pipelines/#adding-finally-to-the-pipeline
