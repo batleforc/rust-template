@@ -41,14 +41,14 @@ data:
     clusters:
       - name: tpl
         cluster:
+          server: https://kubernetes.default.svc
           certificate-authority-data: >-
             ${indent(8, file("${var.kubepath}/ca.crt"))}
-          server: https://kubernetes.default.svc
     users:
       - name: tpl
         user:
           token: >-
-            ${file("${var.kubepath}/token")}
+            ${indent(8, file("${var.kubepath}/token"))
     contexts:
       - name: tpl
         context:
