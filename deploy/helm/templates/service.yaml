@@ -6,8 +6,8 @@ metadata:
   labels:
     app: "{{ .Chart.Name }}-{{ .Values.branch }}"
   annotations:
-    deployment.kubernetes.io/revision: {{ .Release.Revision }}
-    deployment.git-branch: {{ .Values.branch }}
+    deployment.kubernetes.io/revision: "{{ .Release.Revision }}"
+    deployment.git-branch: "{{ .Values.branch }}"
 spec:
   ports:
     {{- range $port := .Values.ports }}

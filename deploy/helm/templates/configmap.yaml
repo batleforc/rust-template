@@ -5,7 +5,7 @@ metadata:
   name: "{{ .Chart.Name }}-{{ .Values.branch }}-auth"
   annotations:
     deployment.kubernetes.io/revision: "{{ .Release.Revision }}"
-    deployment.git-branch: {{ .Values.branch }}
+    deployment.git-branch: "{{ .Values.branch }}"
 data:
   OIDC_ISSUER: "{{ .Values.auth.issuer }}"
   {{- with (first .Values.ingress) }}

@@ -6,10 +6,10 @@ metadata:
   labels:
     app: "{{ .Chart.Name }}-{{ .Values.branch }}"
   annotations:
-    deployment.kubernetes.io/revision: {{ .Release.Revision }}
+    deployment.kubernetes.io/revision: "{{ .Release.Revision }}"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     kubernetes.io/ingress.class: haproxy
-    deployment.git-branch: {{ .Values.branch }}
+    deployment.git-branch: "{{ .Values.branch }}"
 spec:
   tls:
   {{- range $host := .Values.ingress }}
