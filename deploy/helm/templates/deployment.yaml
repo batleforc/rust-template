@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Chart.Name }}-{{ .Values.branch }}-depl"
+  labels:
+    app: "{{ .Chart.Name }}-{{ .Values.branch }}"
+  annotations:
+    deployment.kubernetes.io/revision: {{ .Release.Revision }}
+    deployment.git-branch: {{ .Values.branch }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "{{ .Chart.Name }}-{{ .Values.branch }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Chart.Name }}-{{ .Values.branch }}"
+    spec:
+      containers:
+        - name: "{{ .Chart.Name }}-{{ .Values.branch }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            {{- range $port := .Values.ports }}
+            - containerPort: {{ $port.containerPort }}
+              protocol: {{ $port.protocol }}
+              name: {{ $port.name }}
+            {{- end }}
+          env:
+            {{- range $env := .Values.env }}
+            - name: {{ $env.name }}
+              value: {{ $env.value }}
+            {{- end }}
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: backend-auth
+                  key: clientId
+            - name: OIDC_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: backend-auth
+                  key: keyId
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-auth
+                  key: key
+            - name: OIDC_FRONT_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: frontend-auth
+                  key: client_id
+          envFrom:
+            {{- if .Values.postgresql.enabled}}
+            - secretRef:
+                name: "{{ .Chart.Name }}-{{ .Values.branch }}-pgval"
+            {{- end}}
+            - configMapRef:
+                name: "{{ .Chart.Name }}-{{ .Values.branch }}-auth"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.probe.liveness | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.probe.readiness | nindent 12 }}

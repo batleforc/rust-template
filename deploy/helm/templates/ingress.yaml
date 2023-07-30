@@ -1,0 +1,32 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "{{ .Chart.Name }}-{{ .Values.branch }}-ingress"
+  labels:
+    app: "{{ .Chart.Name }}-{{ .Values.branch }}"
+  annotations:
+    deployment.kubernetes.io/revision: {{ .Release.Revision }}
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: haproxy
+    deployment.git-branch: {{ .Values.branch }}
+spec:
+  tls:
+  {{- range $host := .Values.ingress }}
+    - hosts:
+      - {{ $host.host }}
+      secretName: {{ $host.secretName }}
+  {{- end }}
+  rules:
+  {{- range $host := .Values.ingress }}
+    - host: {{ $host.host }}
+      http:
+        paths:
+        - path: {{ $host.path}}
+          pathType: {{ if $host.pathType }}{{ $host.pathType }}{{ else }}Prefix{{ end }}
+          backend:
+            service:
+              name: "{{ $.Chart.Name }}-{{ $.Values.branch }}-svc"
+              port:
+                number: {{ $host.port}}
+  {{- end }}

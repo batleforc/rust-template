@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+Kind: ConfigMap
+metadata:
+  name: "{{ .Chart.Name }}-{{ .Values.branch }}-auth"
+  annotations:
+    deployment.kubernetes.io/revision: "{{ .Release.Revision }}"
+    deployment.git-branch: {{ .Values.branch }}
+data:
+  OIDC_ISSUER: "{{ .Values.auth.issuer }}"
+  {{- with (first .Values.ingress) }}
+  OIDC_REDIRECT_URI: "https://{{ .host }}/oauth2/callback"
+  {{- end }}
+  OIDC_SCOPES: "{{ .Values.auth.scopes }}"
+  OIDC_USERINFO_URL: "{{ .Values.auth.issuer }}/oidc/v1/userinfo"
+  OIDC_INTROSPECTION_URL: "{{ .Values.auth.issuer }}/oauth/v2/introspect"
+  OIDC_FRONT_TOKEN_URL: "{{ .Values.auth.issuer }}/oauth/v2/token"
+  OIDC_FRONT_AUTH_URL: "{{ .Values.auth.issuer }}/oauth/v2/authorize"
+  OIDC_FRONT_ISSUER: "{{ .Values.auth.issuer }}"
+  OIDC_FRONT_SCOPES: "{{ .Values.auth.scopes }}"
