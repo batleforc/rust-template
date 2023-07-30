@@ -42,7 +42,7 @@ data:
       - name: tpl
         cluster:
           certificate-authority-data: >-
-            ${file("${var.kubepath}/ca.crt")}
+    ${indent(8, file("${var.kubepath}/ca.crt"))}
           server: https://kubernetes.default.svc
     users:
       - name: tpl
