@@ -61,9 +61,13 @@ resources: # Need to be fine tunned in the futur
 ingress:
   - host: template.weebo.fr
     secretName: template-weebo-fr
-    path: /api
-    pathType: Prefix
-    port: 8080
+    paths:
+      - path: /api
+        pathType: Prefix
+        port: 8080
+      - path: /docs
+        pathType: Prefix
+        port: 8080
 
 auth:
   override: false
