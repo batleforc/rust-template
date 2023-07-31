@@ -7,7 +7,7 @@ config:
   registry:
     imageName: template/template-rust
   sonarqube:
-    enabled: true
+    enabled: false
     host: https://qube.weebo.fr
     image: harbor.weebo.fr/sonar/rust:v1.17.10
     useToken: true
