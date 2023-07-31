@@ -24,6 +24,7 @@
 FROM rust:1.71 as builder
 
 WORKDIR /usr/src/api
+RUN apt-get update && apt-get install -y openssl ca-certificates
 COPY . .
 RUN cargo install --path .
 
