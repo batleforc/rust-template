@@ -10,6 +10,7 @@ RUN cargo build --release
 
 FROM alpine:3.17
 
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
