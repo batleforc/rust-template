@@ -45,8 +45,6 @@ env:
     value: "8080"
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
     value: "http://tempo.monitoring.svc.cluster.local:4318"
-  - name: RUST_ENV
-    value: "prod"
   - name: AUTH_TYPE
     value: OIDC
 
