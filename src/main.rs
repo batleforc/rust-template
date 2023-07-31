@@ -31,8 +31,14 @@ async fn main() -> std::io::Result<()> {
     println!("Initializing database");
     let db_config = model::db::DbConfig::new();
     let dbpool = match model::db::DbConfig::get_tls_connector() {
-        Some(connector) => db_config.pg.create_pool(None, connector).unwrap(),
-        None => db_config.pg.create_pool(None, NoTls).unwrap(),
+        Some(connector) => db_config
+            .pg
+            .create_pool(None, connector)
+            .expect("Failed to create pool"),
+        None => db_config
+            .pg
+            .create_pool(None, NoTls)
+            .expect("Failed to create pool without tls"),
     };
     println!("Initializing database schema");
     model::db::on_database_init(dbpool.clone()).await;
