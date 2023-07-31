@@ -18,6 +18,7 @@ mod route;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    println!("Starting server");
     match dotenv() {
         Ok(_) => println!("Loaded .env file"),
         Err(_) => println!("No .env file found"),

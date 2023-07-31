@@ -33,6 +33,8 @@ spec:
             - name: "{{ $env.name }}"
               value: "{{ $env.value }}"
             {{- end }}
+            - name: RUST_ENV
+              value: "{{.Values.branch}}"
             - name: OIDC_CLIENT_ID
               valueFrom:
                 secretKeyRef:
