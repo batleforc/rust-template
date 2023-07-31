@@ -16,7 +16,7 @@ impl DbConfig {
         let port = std::env::var("DB_PORT")
             .unwrap_or_else(|_| "5432".to_string())
             .parse::<u16>()
-            .unwrap();
+            .expect("DB_PORT must be a number");
         let user = std::env::var("DB_USER").unwrap_or_else(|_| "postgres".to_string());
         let password = std::env::var("DB_PASSWORD").unwrap_or_else(|_| "postgres".to_string());
         let database = std::env::var("DB_DATABASE").unwrap_or_else(|_| "postgres".to_string());
