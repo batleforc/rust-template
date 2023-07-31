@@ -30,6 +30,7 @@ async fn main() -> std::io::Result<()> {
     init_telemetry(app_name.as_str());
     println!("Initializing database");
     let db_config = model::db::DbConfig::new();
+    println!("Initializing database pool");
     let dbpool = match model::db::DbConfig::get_tls_connector() {
         Some(connector) => db_config
             .pg
