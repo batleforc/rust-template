@@ -30,8 +30,8 @@ spec:
             {{- end }}
           env:
             {{- range $env := .Values.env }}
-            - name: {{ $env.name }}
-              value: {{ $env.value }}
+            - name: "{{ $env.name }}"
+              value: "{{ $env.value }}"
             {{- end }}
             - name: OIDC_CLIENT_ID
               valueFrom:
