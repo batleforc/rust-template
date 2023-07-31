@@ -22,11 +22,13 @@ spec:
     - host: {{ $host.host }}
       http:
         paths:
-        - path: {{ $host.path}}
-          pathType: {{ if $host.pathType }}{{ $host.pathType }}{{ else }}Prefix{{ end }}
+        {{- range $path := $host.paths }}
+        - path: {{ $path.path}}
+          pathType: {{ if $path.pathType }}{{ $path.pathType }}{{ else }}Prefix{{ end }}
           backend:
             service:
               name: "{{ $.Chart.Name }}-{{ $.Values.branch }}-svc"
               port:
-                number: {{ $host.port}}
+                number: {{ $path.port}}
+        {{- end}}
   {{- end }}
