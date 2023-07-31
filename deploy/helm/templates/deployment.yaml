@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: "{{ .Chart.Name }}-{{ .Values.branch }}"
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.branch }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             {{- range $port := .Values.ports }}
