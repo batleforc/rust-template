@@ -42,6 +42,7 @@ impl DbConfig {
     }
 
     pub fn get_tls_connector() -> Option<postgres_openssl::MakeTlsConnector> {
+        println!("Getting tls connector");
         let tls_mode = std::env::var("DB_TLS")
             .unwrap_or_else(|_| "true".to_string())
             .parse::<bool>()
@@ -49,15 +50,17 @@ impl DbConfig {
         if !tls_mode {
             return None;
         }
+        println!("Check if verify cert");
         let verify_cert = std::env::var("DB_VERIFY_CERT")
             .unwrap_or_else(|_| "false".to_string())
             .parse::<bool>()
             .expect("DB_VERIFY_CERT must be a boolean");
+        println!("Creating builder");
         let mut builder = SslConnector::builder(SslMethod::tls()).expect("Cannot create builder");
         if !verify_cert {
             builder.set_verify(SslVerifyMode::NONE);
         }
-
+        println!("Creating connector");
         let connector = postgres_openssl::MakeTlsConnector::new(builder.build());
         Some(connector)
     }
