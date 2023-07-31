@@ -47,6 +47,8 @@ env:
     value: "http://tempo.monitoring.svc.cluster.local:4318"
   - name: AUTH_TYPE
     value: OIDC
+  - name: RUST_LOG
+    value: "trace"
 
 resources: # Need to be fine tunned in the futur
   limits:
