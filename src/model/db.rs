@@ -45,15 +45,15 @@ impl DbConfig {
         let tls_mode = std::env::var("DB_TLS")
             .unwrap_or_else(|_| "true".to_string())
             .parse::<bool>()
-            .unwrap();
+            .expect("DB_TLS must be a boolean");
         if !tls_mode {
             return None;
         }
         let verify_cert = std::env::var("DB_VERIFY_CERT")
             .unwrap_or_else(|_| "false".to_string())
             .parse::<bool>()
-            .unwrap();
-        let mut builder = SslConnector::builder(SslMethod::tls()).unwrap();
+            .expect("DB_VERIFY_CERT must be a boolean");
+        let mut builder = SslConnector::builder(SslMethod::tls()).expect("Cannot create builder");
         if !verify_cert {
             builder.set_verify(SslVerifyMode::NONE);
         }
