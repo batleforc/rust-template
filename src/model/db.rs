@@ -58,6 +58,7 @@ impl DbConfig {
         println!("Creating builder");
         let mut builder = SslConnector::builder(SslMethod::tls()).expect("Cannot create builder");
         if !verify_cert {
+            println!("Setting verify mode to none");
             builder.set_verify(SslVerifyMode::NONE);
         }
         println!("Creating connector");
