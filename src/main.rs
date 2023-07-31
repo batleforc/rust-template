@@ -26,20 +26,24 @@ async fn main() -> std::io::Result<()> {
     let rust_env = std::env::var("RUST_ENV").unwrap_or_else(|_| "production".to_string());
     let app_name = format!("ApiRust-{}", rust_env);
     std::env::set_var("APP_NAME", app_name.clone());
+    println!("Initializing telemetry");
     init_telemetry(app_name.as_str());
+    println!("Initializing database");
     let db_config = model::db::DbConfig::new();
     let dbpool = match model::db::DbConfig::get_tls_connector() {
         Some(connector) => db_config.pg.create_pool(None, connector).unwrap(),
         None => db_config.pg.create_pool(None, NoTls).unwrap(),
     };
-
+    println!("Initializing database schema");
     model::db::on_database_init(dbpool.clone()).await;
 
+    println!("Initializing OpenApi");
     let openapi = ApiDoc::openapi();
     let port: u16 = std::env::var("PORT")
         .unwrap_or_else(|_| "5437".to_string())
         .parse()
-        .unwrap();
+        .expect("PORT must be a number");
+    println!("Initializing Prometheus");
     let prometheus = PrometheusMetricsBuilder::new("api_rust")
         .endpoint("/metrics")
         .build()
@@ -47,7 +51,7 @@ async fn main() -> std::io::Result<()> {
     let oidc_handler = match model::oidc::Oidc::new() {
         Ok(oidc) => oidc,
         Err(e) => {
-            println!("Error: {}", e);
+            println!("Oidc eror: {}", e);
             model::oidc::Oidc::new_disable()
         }
     };
