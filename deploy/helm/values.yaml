@@ -31,13 +31,13 @@ probe:
     httpGet:
       path: /
       port: http
-    initialDelaySeconds: 30
+    initialDelaySeconds: 10
     periodSeconds: 10
   readiness:
     httpGet:
       path: /
       port: http
-    initialDelaySeconds: 30
+    initialDelaySeconds: 5
     periodSeconds: 10
 
 env:
@@ -46,7 +46,7 @@ env:
   - name: OTEL_EXPORTER_JAEGER_AGENT_HOST
     value: "tempo.monitoring.svc.cluster.local"
   - name: OTEL_EXPORTER_JAEGER_AGENT_PORT
-    value: "16686"
+    value: "6831"
   - name: AUTH_TYPE
     value: OIDC
   - name: RUST_LOG
