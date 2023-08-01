@@ -7,13 +7,16 @@ config:
   registry:
     imageName: template/template-rust
   sonarqube:
-    enabled: false
+    enabled: true
     host: https://qube.weebo.fr
-    image: harbor.weebo.fr/sonar/rust:v1.17.10
+    image: harbor.weebo.fr/sonar/rust:v1.17.12
     useToken: true
-    additionalScript: |
-      set -ex
-      cargo clippy --message-format=json > clippy-report.json
-    #cargo audit --json > audit-report.json
-    #cargo outdated --depth 1 --format json > outdated-report.json
-    #cargo sonar --issues clippy,audit,outdated --clippy-path clippy-report.json --audit-path audit-report.json --outdated-path outdated-report.json
+    additionalScript:
+      enabled: true
+      image: harbor.weebo.fr/sonar/rust:v1.17.12-prepare
+      script: |
+        set -ex
+        cargo clippy --message-format=json > clippy-report.json
+        cargo audit --json > audit-report.json
+        cargo outdated --depth 1 --format json > outdated-report.json
+        cargo sonar --issues clippy,audit,outdated --clippy-path clippy-report.json --audit-path audit-report.json --outdated-path outdated-report.json
