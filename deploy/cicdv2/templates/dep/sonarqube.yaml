@@ -161,7 +161,7 @@ spec:
         fi
     {{- if .Values.config.sonarqube.additionalScript.enabled}}
     - name: prepare-cli
-      image: {{ .Values.config.sonarqube.additionalScript.image}}}
+      image: {{ .Values.config.sonarqube.additionalScript.image}}
       workingDir: $(workspaces.source.path)
       command:
         - /bin/sh
