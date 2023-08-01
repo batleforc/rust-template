@@ -16,6 +16,7 @@ config:
       image: harbor.weebo.fr/sonar/rust:v1.17.12-prepare
       script: |
         set -x
+        git config --global --add safe.directory /workspace/source
         git fetch --unshallow
         cargo clippy --message-format=json > clippy-report.json
         cargo audit --json > audit-report.json
