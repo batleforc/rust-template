@@ -84,27 +84,29 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(dbpool.clone()))
             .app_data(web::Data::new(oidc_handler.clone()))
-            .wrap_fn(|mut req, srv| {
-                let request_id_asc = req.extract::<RequestId>();
-                let fut = srv.call(req);
-                async move {
-                    let mut res = fut.await?;
-                    let request_id: RequestId = request_id_asc.await.unwrap();
-                    let request_id_str = format!("{}", request_id);
-                    let headers = res.headers_mut();
-                    headers.insert(
-                        header::HeaderName::from_static("x-request-id"),
-                        header::HeaderValue::from_str(request_id_str.as_str()).unwrap(),
-                    );
-                    Ok(res)
-                }
-            })
             .wrap(cors)
-            .wrap(TracingLogger::default())
             .wrap(prometheus.clone())
             .service(health)
             .service(hello)
-            .service(route::init::init_api())
+            .service(
+                route::init::init_api()
+                    .wrap_fn(|mut req, srv| {
+                        let request_id_asc = req.extract::<RequestId>();
+                        let fut = srv.call(req);
+                        async move {
+                            let mut res = fut.await?;
+                            let request_id: RequestId = request_id_asc.await.unwrap();
+                            let request_id_str = format!("{}", request_id);
+                            let headers = res.headers_mut();
+                            headers.insert(
+                                header::HeaderName::from_static("x-request-id"),
+                                header::HeaderValue::from_str(request_id_str.as_str()).unwrap(),
+                            );
+                            Ok(res)
+                        }
+                    })
+                    .wrap(TracingLogger::default()),
+            )
             .service(swagger_ui)
     })
     .bind(("0.0.0.0", port))?
