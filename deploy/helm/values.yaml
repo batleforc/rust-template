@@ -48,7 +48,7 @@ env:
   - name: OTEL_EXPORTER_OTLP_AGENT_PORT
     value: "4317"
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
-    value: "http://tempo.monitoring.svc.cluster.local:4317"
+    value: "http://tempo.monitoring.svc.cluster.local:14250"
   - name: AUTH_TYPE
     value: OIDC
   - name: RUST_LOG
