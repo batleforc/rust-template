@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
     let app_name = format!("ApiRust-{}", rust_env);
     std::env::set_var("APP_NAME", app_name.clone());
     println!("Initializing telemetry");
-    init_telemetry(app_name.as_str());
+    init_telemetry();
     println!("Initializing database");
     let db_config = model::db::DbConfig::new();
     println!("Initializing database pool");
