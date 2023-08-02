@@ -44,7 +44,7 @@ env:
   - name: PORT
     value: "8080"
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
-    value: "http://tempo.monitoring.svc.cluster.local:6381"
+    value: "https://tempo.monitoring.svc.cluster.local:6381"
   - name: AUTH_TYPE
     value: OIDC
   - name: RUST_LOG
