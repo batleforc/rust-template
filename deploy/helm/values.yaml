@@ -43,9 +43,9 @@ probe:
 env:
   - name: PORT
     value: "8080"
-  - name: OTEL_EXPORTER_OTLP_AGENT_HOST
+  - name: OTEL_EXPORTER_OTLP_HOST
     value: "tempo.monitoring.svc.cluster.local"
-  - name: OTEL_EXPORTER_OTLP_AGENT_PORT
+  - name: OTEL_EXPORTER_OTLP_PORT
     value: "4317"
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
     value: "http://tempo.monitoring.svc.cluster.local:14250"
