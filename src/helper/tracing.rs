@@ -3,6 +3,7 @@ use opentelemetry::KeyValue;
 use opentelemetry::{
     global, runtime::TokioCurrentThread, sdk::propagation::TraceContextPropagator,
 };
+use opentelemetry_otlp::OTEL_EXPORTER_OTLP_ENDPOINT;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::{EnvFilter, Registry};
@@ -12,6 +13,10 @@ pub fn init_telemetry() {
     // Spans are exported in batch - recommended setup for a production application.
     global::set_text_map_propagator(TraceContextPropagator::new());
     let app_name = std::env::var("APP_NAME").unwrap_or_else(|_| "ApiRust".to_string());
+    println!(
+        "Endpoint {}",
+        std::env::var(OTEL_EXPORTER_OTLP_ENDPOINT).unwrap()
+    );
     let exporter = opentelemetry_otlp::new_exporter().tonic();
     let otlp_tracer = opentelemetry_otlp::new_pipeline()
         .tracing()
