@@ -44,11 +44,11 @@ env:
   - name: PORT
     value: "8080"
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
-    value: "https://tempo.monitoring.svc.cluster.local:4318"
+    value: "http://tempo.monitoring.svc.cluster.local:4317"
   - name: AUTH_TYPE
     value: OIDC
   - name: RUST_LOG
-    value: "trace"
+    value: "debug"
 
 resources: # Need to be fine tunned in the futur
   limits:
