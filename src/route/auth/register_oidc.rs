@@ -95,7 +95,7 @@ pub async fn register_oidc(
         let pool = pool.clone();
         let user_info = user_info.clone();
         async move {
-            match User::get_one_by_mail(pool, user_info["email"].to_string().replace("\"", ""))
+            match User::get_one_by_mail(pool, user_info["email"].to_string().replace('\"', ""))
                 .await
             {
                 Ok(user) => Ok(user),
@@ -118,15 +118,15 @@ pub async fn register_oidc(
         Some(mut user) => {
             tracing::debug!("User found in database");
             let span_update_user = tracing::info_span!("Update user");
-            return async move {
+            async move {
                 if !user.is_oauth {
                     tracing::error!("User is not oauth");
                     return HttpResponse::Unauthorized()
                         .content_type(ContentType::plaintext())
                         .body("User is not oauth");
                 }
-                user.nom = user_info["family_name"].to_string().replace("\"", "");
-                user.prenom = user_info["given_name"].to_string().replace("\"", "");
+                user.nom = user_info["family_name"].to_string().replace('\"', "");
+                user.prenom = user_info["given_name"].to_string().replace('\"', "");
                 match user.clone().update_name_surname(pool.clone()).await {
                     Ok(nbr) => {
                         if nbr > 0 {
@@ -135,7 +135,7 @@ pub async fn register_oidc(
                             tracing::debug!("Nothing to update");
                         }
                         tracing::debug!("User updated");
-                        return HttpResponse::Ok().json(user);
+                        HttpResponse::Ok().json(user)
                     }
                     Err(err) => {
                         tracing::error!("Error while updating user {:?}", err);
@@ -146,13 +146,13 @@ pub async fn register_oidc(
                 }
             }
             .instrument(span_update_user)
-            .await;
+            .await
         }
         None => {
             tracing::debug!("User not found in database, proceed to create it");
             let span_create_user = tracing::info_span!("Create user");
 
-            return async move {
+            async move {
                 let pool = pool.clone();
                 let user = User {
                     id: uuid::Uuid::new_v4(),
@@ -172,7 +172,7 @@ pub async fn register_oidc(
                 match user.clone().create(pool).await {
                     Ok(_) => {
                         tracing::debug!("User created");
-                        return HttpResponse::Ok().json(user);
+                        HttpResponse::Ok().json(user)
                     }
                     Err(err) => {
                         tracing::error!("Error while creating user {:?}", err);
@@ -183,7 +183,7 @@ pub async fn register_oidc(
                 }
             }
             .instrument(span_create_user)
-            .await;
+            .await
         }
     }
 }

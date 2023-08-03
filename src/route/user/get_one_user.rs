@@ -47,7 +47,7 @@ pub async fn get_one_user(
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?user.email ,"Error while getting user");
-                    return Err(HttpResponse::NotFound().finish());
+                    Err(HttpResponse::NotFound().finish())
                 }
             }
         }

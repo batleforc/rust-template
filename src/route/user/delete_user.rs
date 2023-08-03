@@ -38,7 +38,7 @@ pub async fn delete_user(user: User, db_pool: web::Data<Pool>) -> impl Responder
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?user_copy.email ,"Error while deleting user");
-                    return Err(HttpResponse::NotFound().finish());
+                    Err(HttpResponse::NotFound().finish())
                 }
             }
         }
