@@ -35,6 +35,10 @@ spec:
             {{- end }}
             - name: RUST_ENV
               value: "{{.Values.branch}}"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: OIDC_CLIENT_ID
               valueFrom:
                 secretKeyRef:

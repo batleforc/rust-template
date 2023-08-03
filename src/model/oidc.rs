@@ -147,6 +147,6 @@ impl BackOidc {
 
 impl FrontOidc {
     pub fn get_scope(&self) -> Vec<String> {
-        self.scopes.split(" ").map(|s| s.to_string()).collect()
+        self.scopes.split(' ').map(|s| s.to_string()).collect()
     }
 }

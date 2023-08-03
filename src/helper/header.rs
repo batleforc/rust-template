@@ -34,8 +34,8 @@ pub fn extract_authorization_type_header(
     let token = match header.get("Authorization") {
         Some(token) => match token.to_str() {
             Ok(token) => {
-                if token.starts_with("Bearer ") {
-                    &token[7..]
+                if let Some(end) = token.strip_prefix("Bearer ") {
+                    end
                 } else {
                     return Err(HttpResponse::Unauthorized()
                         .content_type(ContentType::plaintext())
