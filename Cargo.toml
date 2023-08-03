@@ -1,38 +1,15 @@
 [package]
-name = "api"
+name = "rust_template"
 version = "0.1.0"
 edition = "2021"
-authors = ["Batleforc"]
-default-run = "api"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "4"
-actix-cors = "0.6"
-utoipa = {version="3",features= ["actix_extras","chrono","uuid"] }
-utoipa-swagger-ui = { version = "3", features = ["actix-web"] }
-uuid = { version = "1.4", features = ["v4","serde"]}
-bcrypt = "0.15.0"
 serde = "1.0"
-dotenvy = "0.15"
-tracing = "0.1.37"
-tracing-actix-web = { version = "0.7", features = ["opentelemetry_0_19"]}
-opentelemetry = { version = "0.19", features = ["rt-tokio-current-thread"] }
-tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
-opentelemetry-otlp = { version = "0.12.0"}
-tracing-bunyan-formatter = "0.3"
-tracing-opentelemetry = "0.19.0"
-actix-web-prom = "0.7.0"
-serde_json = "1.0"
+uuid = { version = "1.4", features = ["v4","serde"]}
 chrono = { version = "0.4", features = ["serde"] }
-tokio-postgres = { version = "0.7", features = ["with-uuid-1","with-chrono-0_4","with-serde_json-1"] }
-deadpool-postgres = { version = "0.10", features = ["serde"]}
-jsonwebtoken = "8"
-regex = "1.9.1"
-openssl = { version = "0.10", features = ["vendored"]}
-postgres-openssl = "0.5.0"
+utoipa = {version="3",features= ["actix_extras","chrono","uuid"] }
+bcrypt = "0.15"
 totp-rs = {version = "5", features = ["serde_support","qr","gen_secret"]}
-rand = "0.8.5"
-reqwest = { version = "0.11.18", features = ["json","gzip"]}
 
