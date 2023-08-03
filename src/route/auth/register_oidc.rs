@@ -156,11 +156,11 @@ pub async fn register_oidc(
                 let pool = pool.clone();
                 let user = User {
                     id: uuid::Uuid::new_v4(),
-                    email: user_info["email"].to_string().replace("\"", ""),
+                    email: user_info["email"].to_string().replace('\"', ""),
                     password: "".to_string(),
                     is_oauth: true,
-                    nom: user_info["family_name"].to_string().replace("\"", ""),
-                    prenom: user_info["given_name"].to_string().replace("\"", ""),
+                    nom: user_info["family_name"].to_string().replace('\"', ""),
+                    prenom: user_info["given_name"].to_string().replace('\"', ""),
                     created_at: chrono::Utc::now(),
                     updated_at: chrono::Utc::now(),
                     otp_enabled: false,
