@@ -50,7 +50,7 @@ pub async fn update_user(
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?user_copy.email ,"Error while updating user");
-                    return Err(HttpResponse::NotFound().finish());
+                    Err(HttpResponse::NotFound().finish())
                 }
             }
         }

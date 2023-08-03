@@ -58,11 +58,11 @@ pub async fn register(
                         .body("User already exist"));
                     }
                     tracing::debug!(user = ?body_swap.email.clone() ,"User does not exist");
-                    return Ok(());
+                    Ok(())
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?body_swap.email.clone(), code= ?err.as_db_error() ,"Error while getting user");
-                    return Err(HttpResponse::BadRequest().finish());
+                    Err(HttpResponse::BadRequest().finish())
                 }
             }
         }.instrument(check_user_span).await{
@@ -124,7 +124,7 @@ pub async fn register(
         is_oauth: false,
     };
 
-    let id = user.id.clone();
+    let id = user.id;
 
     {
         let span =
@@ -136,7 +136,7 @@ pub async fn register(
             .content_type(ContentType::plaintext())
             .body("Error while hashing password"));
         }
-        return Ok(());
+        Ok(())
         }) {
             return res_hash;
         }
@@ -152,7 +152,7 @@ pub async fn register(
                 .content_type(ContentType::plaintext())
                 .body("Error while creating user"));
         }
-        return Ok(());
+        Ok(())
         }
         .instrument(insert_user_span)
         .await

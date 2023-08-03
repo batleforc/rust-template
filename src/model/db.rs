@@ -10,6 +10,12 @@ pub struct DbConfig {
     pub pg: deadpool_postgres::Config,
 }
 
+impl Default for DbConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DbConfig {
     pub fn new() -> Self {
         let host = std::env::var("DB_HOST").unwrap_or_else(|_| "localhost".to_string());

@@ -62,13 +62,13 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
                         },
                         None => {
                             tracing::error!(user = ?body_swap.email.clone() ,"User not found");
-                            return Err(HttpResponse::Unauthorized().finish());
+                            Err(HttpResponse::Unauthorized().finish())
                         }
                     }
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?body_swap.email.clone() ,"Error while getting user");
-                    return Err(HttpResponse::Unauthorized().finish());
+                    Err(HttpResponse::Unauthorized().finish())
                 }
             }
         }.instrument(check_user_span)
@@ -86,11 +86,11 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
                         return Err(HttpResponse::Unauthorized().finish());
                     }
                     tracing::debug!(user = ?body.email.clone() ,"Password validated");
-                    return Ok(());
+                    Ok(())
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?body.email.clone() ,"Error while validating password");
-                    return Err(HttpResponse::Unauthorized().finish());
+                    Err(HttpResponse::Unauthorized().finish())
                 }
             }
         }){
@@ -183,7 +183,7 @@ pub async fn login(login_body: web::Json<LoginUser>, db_pool: web::Data<Pool>) -
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?body_swap.email.clone() ,"Error while saving refresh token to db");
-                    return Err(HttpResponse::InternalServerError().finish());
+                    Err(HttpResponse::InternalServerError().finish())
                 }
             }
         }.instrument(insert_new_token_span).await{

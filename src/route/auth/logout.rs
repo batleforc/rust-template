@@ -66,7 +66,7 @@ pub async fn logout(req: HttpRequest, db_pool: web::Data<Pool>) -> impl Responde
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,token = ?token ,"Error while getting refresh token");
-                    return Err(HttpResponse::Unauthorized().finish());
+                    Err(HttpResponse::Unauthorized().finish())
                 }
             }
         }
@@ -88,7 +88,7 @@ pub async fn logout(req: HttpRequest, db_pool: web::Data<Pool>) -> impl Responde
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,token = ?token ,"Error while deleting refresh token");
-                    return Err(HttpResponse::InternalServerError().finish());
+                    Err(HttpResponse::InternalServerError().finish())
                 }
             }
         }

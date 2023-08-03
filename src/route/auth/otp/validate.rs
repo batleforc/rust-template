@@ -45,7 +45,7 @@ pub async fn validate_otp(
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?body_swap.one_time_token.clone() ,"Error while getting user");
-                    return Err(HttpResponse::Unauthorized().finish());
+                    Err(HttpResponse::Unauthorized().finish())
                 }
             }
         }.instrument(find_user_span)
@@ -89,7 +89,7 @@ pub async fn validate_otp(
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?user_swap.email ,"Error while updating user otp");
-                    return Err(HttpResponse::InternalServerError().finish());
+                    Err(HttpResponse::InternalServerError().finish())
                 }
             }
         }.instrument(update_otp_span)
@@ -149,7 +149,7 @@ pub async fn validate_otp(
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?body_swap.one_time_token.clone() ,"Error while saving refresh token to db");
-                    return Err(HttpResponse::InternalServerError().finish());
+                    Err(HttpResponse::InternalServerError().finish())
                 }
             }
         }.instrument(insert_new_token_span).await{

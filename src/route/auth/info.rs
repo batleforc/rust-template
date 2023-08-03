@@ -1,6 +1,7 @@
 use crate::model::oidc::{FrontOidc, Oidc};
 use actix_web::{get, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use utoipa::ToSchema;
 
 #[derive(Deserialize, Serialize, ToSchema, Clone)]
@@ -24,11 +25,11 @@ pub enum AuthType {
     BuildIn,
 }
 
-impl AuthType {
-    pub fn to_string(&self) -> String {
+impl fmt::Display for AuthType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            AuthType::Oidc => "oidc".to_string(),
-            AuthType::BuildIn => "buildin".to_string(),
+            AuthType::Oidc => write!(f, "oidc"),
+            AuthType::BuildIn => write!(f, "buildin"),
         }
     }
 }

@@ -76,7 +76,7 @@ pub async fn refresh(req: HttpRequest, db_pool: web::Data<Pool>) -> impl Respond
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,token = ?token ,"Error while getting refresh token");
-                    return Err(HttpResponse::Unauthorized().finish());
+                    Err(HttpResponse::Unauthorized().finish())
                 }
             }
         }
@@ -95,7 +95,7 @@ pub async fn refresh(req: HttpRequest, db_pool: web::Data<Pool>) -> impl Respond
             Ok(token) => Ok(token),
             Err(err) => {
                 tracing::error!(error = ?err, "Error while signing token");
-                return Err(HttpResponse::InternalServerError().finish());
+                Err(HttpResponse::InternalServerError().finish())
             }
         }
     }) {

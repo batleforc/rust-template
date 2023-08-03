@@ -60,7 +60,7 @@ pub async fn generate_otp(mut user: User, db_pool: web::Data<Pool>) -> impl Resp
                 }
                 Err(err) => {
                     tracing::error!(error = ?err,user = ?user_swap.email ,"Error while updating user otp");
-                    return Err(HttpResponse::InternalServerError().finish());
+                    Err(HttpResponse::InternalServerError().finish())
                 }
             }
         }.instrument(update_otp_span)

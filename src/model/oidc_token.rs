@@ -36,7 +36,7 @@ impl OidcTokenClaim {
         match jsonwebtoken::encode(
             &header,
             self,
-            &jsonwebtoken::EncodingKey::from_rsa_pem(&private_key.as_bytes()).unwrap(),
+            &jsonwebtoken::EncodingKey::from_rsa_pem(private_key.as_bytes()).unwrap(),
         ) {
             Ok(token) => Ok(token),
             Err(e) => Err(e.to_string()),
