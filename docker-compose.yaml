@@ -1,3 +1,4 @@
+---
 services:
   jaeger:
     image: jaegertracing/all-in-one:1.42
@@ -39,42 +40,41 @@ services:
       - 5433:5432
 
   zitadel:
-    restart: 'always'
-    image: 'ghcr.io/zitadel/zitadel:latest'
+    restart: "always"
+    image: "ghcr.io/zitadel/zitadel:latest"
     command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
-    #command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled --config /extra-config.yaml'
+    # command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled --config /extra-config.yaml'
     environment:
-      - 'ZITADEL_DATABASE_COCKROACH_HOST=crdb'
-      - 'ZITADEL_EXTERNALSECURE=false'
-      - 'ZITADEL_TLS_ENABLED=false'
-      - 'ZITADEL_EXTERNALDOMAIN=localhost'
-      - 'ZITADEL_FIRSTINSTANCE_MACHINEKEYPATH=/machinekey/zitadel-admin-sa.json'
-      - 'ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_USERNAME=zitadel-admin-sa'
-      - 'ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME=Admin'
-      - 'ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINEKEY_TYPE=1'
+      - "ZITADEL_DATABASE_COCKROACH_HOST=crdb"
+      - "ZITADEL_EXTERNALSECURE=false"
+      - "ZITADEL_TLS_ENABLED=false"
+      - "ZITADEL_EXTERNALDOMAIN=localhost"
+      - "ZITADEL_FIRSTINSTANCE_MACHINEKEYPATH=/machinekey/zitadel-admin-sa.json"
+      - "ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_USERNAME=zitadel-admin-sa"
+      - "ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME=Admin"
+      - "ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINEKEY_TYPE=1"
     depends_on:
       crdb:
-        condition: 'service_healthy'
+        condition: "service_healthy"
     ports:
-      - '8080:8080'
+      - "8080:8080"
     volumes:
       - ./machinekey:/machinekey
-     # - ./zitadel-config/extra-config.yaml:/extra-config.yaml:ro
 
   crdb:
-    restart: 'always'
-    image: 'cockroachdb/cockroach:v22.2.2'
-    command: 'start-single-node --insecure'
+    restart: "always"
+    image: "cockroachdb/cockroach:v22.2.2"
+    command: "start-single-node --insecure"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
-      interval: '10s'
-      timeout: '30s'
+      interval: "10s"
+      timeout: "30s"
       retries: 5
-      start_period: '20s'
+      start_period: "20s"
     ports:
-      - '9090:8080'
-      - '26257:26257'
-  
+      - "9090:8080"
+      - "26257:26257"
+
   terraform:
     image: hashicorp/terraform:latest
     container_name: terraform
@@ -83,4 +83,7 @@ services:
       - ./machinekey:/machinekey
     working_dir: /terraform
     entrypoint: ["/bin/sh", "-c"]
-    command: ["terraform init && terraform apply -auto-approve -var='path=/machinekey' -var='domain=zitadel'"]
+    command:
+      [
+        "terraform init && terraform apply -auto-approve -var='path=/machinekey' -var='domain=zitadel'",
+      ]

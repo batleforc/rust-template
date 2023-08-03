@@ -24,7 +24,7 @@ pub fn validate_password(password: String) -> bool {
     if !password.chars().any(|c| c.is_uppercase()) {
         return false;
     }
-    return true;
+    true
 }
 
 // validate name and surname

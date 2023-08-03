@@ -110,7 +110,7 @@ impl User {
             FROM users
             WHERE email = $1";
         let row = client.query(get_one, &[&email]).await?;
-        Ok(row.len() > 0)
+        Ok(!row.is_empty())
     }
 
     pub async fn get_one_by_mail(
@@ -200,9 +200,7 @@ impl User {
 
         let delete_user = "DELETE FROM users where id = $1";
         let delete_token = "DELETE FROM refresh_tokens where user_id = $1";
-        if let Err(err) = client.execute(delete_user, &[&self.id]).await {
-            return Err(err);
-        }
+        client.execute(delete_user, &[&self.id]).await?;
         client.execute(delete_token, &[&self.id]).await
     }
 
@@ -314,7 +312,7 @@ impl User {
 
     pub fn validate_otp(&self, otp: String) -> Result<bool, SystemTimeError> {
         let totp = self.get_totp_obj().unwrap();
-        return totp.check_current(&otp);
+        totp.check_current(&otp)
     }
 }
 
@@ -367,21 +365,21 @@ impl FromRequest for User {
                             .await {
                                 Ok((valide, value)) => {
                                     if valide {
-                                        let email = value["email"].to_string().replace("\"", "");
+                                        let email = value["email"].to_string().replace('\"', "");
                                         tracing::debug!(email=?email, "Token valide returning email");
                                         Ok(email)
                                     } else {
                                         tracing::error!("Token invalide");
-                                        return Err(ErrorUnauthorized(
+                                        Err(ErrorUnauthorized(
                                             "Error lors de la récupération du token",
-                                        ));
+                                        ))
                                     }
                                 }
                                 Err(err) => {
                                     tracing::error!(error = ?err, "Error while checking token with oidc");
-                                    return Err(ErrorUnauthorized(
+                                    Err(ErrorUnauthorized(
                                         "Error lors de la récupération du token",
-                                    ));
+                                    ))
                                 }
                             }
                     }
@@ -396,7 +394,7 @@ impl FromRequest for User {
                                 Ok(claim) => Ok(claim),
                                 Err(err) => {
                                     tracing::error!(error = ?err, "Error while checking token");
-                                    return Err("Invalid token".to_string());
+                                    Err("Invalid token".to_string())
                                 }
                             }
                         }) {
@@ -419,12 +417,12 @@ impl FromRequest for User {
                         Some(user) => Ok(user),
                         None => {
                             tracing::error!("User not found");
-                            return Err(ErrorUnauthorized("Invalid token"));
+                            Err(ErrorUnauthorized("Invalid token"))
                         }
                     },
                     Err(err) => {
                         tracing::error!(error = ?err, "Error while getting user");
-                        return Err(ErrorUnauthorized("Invalid token"));
+                        Err(ErrorUnauthorized("Invalid token"))
                     }
                 }
             }

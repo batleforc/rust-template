@@ -14,6 +14,7 @@ pub fn init_telemetry() {
     global::set_text_map_propagator(TraceContextPropagator::new());
     let app_name = std::env::var("APP_NAME").unwrap_or_else(|_| "ApiRust".to_string());
     let endpoint = std::env::var(OTEL_EXPORTER_OTLP_ENDPOINT).expect("Missing OTLP endpoint");
+    let pod_name = std::env::var("POD_NAME").unwrap_or_else(|_| "not_a_pod".to_string());
     println!("Endpoint {}", endpoint);
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
@@ -21,12 +22,10 @@ pub fn init_telemetry() {
     let otlp_tracer = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(exporter)
-        .with_trace_config(
-            trace::config().with_resource(Resource::new(vec![KeyValue::new(
-                "service.name",
-                app_name.clone(),
-            )])),
-        )
+        .with_trace_config(trace::config().with_resource(Resource::new(vec![
+            KeyValue::new("service.name", app_name.clone()),
+            KeyValue::new("service.pod", pod_name.clone()),
+        ])))
         .install_batch(TokioCurrentThread)
         .expect("Failed to install OpenTelemetry tracer.");
 
@@ -36,7 +35,7 @@ pub fn init_telemetry() {
     // Create a `tracing` layer using the Jaeger tracer
     let telemetry = tracing_opentelemetry::layer().with_tracer(otlp_tracer);
     // Create a `tracing` layer to emit spans as structured logs to stdout
-    let formatting_layer = BunyanFormattingLayer::new(app_name.into(), std::io::stdout);
+    let formatting_layer = BunyanFormattingLayer::new(app_name.clone(), std::io::stdout);
     // Combined them all together in a `tracing` subscriber
     let subscriber = Registry::default()
         .with(env_filter)

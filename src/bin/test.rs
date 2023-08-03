@@ -39,7 +39,7 @@ async fn main() -> std::io::Result<()> {
             if !user_info.is_null() {
                 println!("user_info: {:?}", user_info);
                 println!("user_info: {:?}", user_info);
-                println!("{}", user_info["email"].to_string());
+                println!("{}", user_info["email"]);
             } else {
                 println!("Error while getting userinfo");
             }
