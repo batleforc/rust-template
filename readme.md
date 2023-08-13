@@ -28,3 +28,27 @@ The goal of this rewrite is to make the code more readable, more maintainable an
 
 - [ ] Dev api for the new BackOffice
 - [ ] Integrates the future VueTS Front
+
+## Hexa WorkFlow
+
+### Hexa Archi
+
+### Domain
+
+```mermaid
+classDiagram
+    note "Hexa WorkFlow"
+    class TokenClaims{
+        +UUID sub
+        +String Email
+        +Usise exp
+        +Usise iat
+        +String iss
+        +Bool refresh
+        +new()
+        gen_header()
+        +get_key()
+        +sign_token()
+        +validate_token()
+    }
+```

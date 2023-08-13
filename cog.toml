@@ -13,7 +13,9 @@ post_package_bump_hooks = []
 
 [changelog]
 path = "CHANGELOG.md"
-authors = []
+authors = [
+  { signature = "Maxime Leriche", username = "batleforc" },
+]
 
 [bump_profiles]
 
