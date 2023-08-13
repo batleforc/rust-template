@@ -1,4 +1,4 @@
-use std::{default, fmt::Display};
+use std::fmt::Display;
 
 use totp_rs::{Algorithm, Secret, TOTP};
 
@@ -13,7 +13,6 @@ impl Display for TotpError {
         match self {
             TotpError::InvalidSecret(msg) => write!(f, "Invalid secret: {}", msg),
             TotpError::ValidateSecret(msg) => write!(f, "Validate secret: {}", msg),
-            _ => write!(f, "Totp error"),
         }
     }
 }
@@ -42,6 +41,16 @@ impl Totp {
         ) {
             Ok(t) => Ok(t),
             Err(err) => Err(TotpError::InvalidSecret(err.to_string())),
+        }
+    }
+    pub fn get_otp_url(
+        email: String,
+        secret: String,
+        app_name: String,
+    ) -> Result<String, TotpError> {
+        match Totp::get_totp_obj(email, secret, app_name) {
+            Ok(totp_object) => Ok(totp_object.get_url()),
+            Err(err) => Err(err),
         }
     }
     pub fn gen_otp_secret() -> Result<String, TotpError> {

@@ -1,4 +1,7 @@
-use super::password::{Password, PasswordError};
+use super::{
+    otp::{Totp, TotpError},
+    password::{Password, PasswordError},
+};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -94,17 +97,30 @@ impl User {
             Err(err) => Err(err),
         }
     }
-    pub fn set_otp_secret(&mut self, otp_secret: String) {
-        self.otp_secret = Some(otp_secret);
-        // TODO: Include otp handler for secret gen
+    pub fn gen_otp_secret(&mut self) -> Result<(), TotpError> {
+        match Totp::gen_otp_secret() {
+            Ok(secret) => {
+                self.otp_secret = Some(secret);
+                self.set_otp_enabled(true);
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
     }
-    pub fn set_otp_url(&mut self, otp_url: String) {
-        self.otp_url = Some(otp_url);
-        // TODO: Include otp url
+    pub fn create_otp_url(&mut self, app_name: String) -> Result<(), TotpError> {
+        if let Some(otp_secret) = self.get_otp_secret() {
+            return match Totp::get_otp_url(self.get_email(), otp_secret.clone(), app_name) {
+                Ok(url) => {
+                    self.otp_url = Some(url);
+                    Ok(())
+                }
+                Err(err) => Err(TotpError::InvalidSecret(err.to_string())),
+            };
+        }
+        Err(TotpError::InvalidSecret("No secret defined".to_string()))
     }
     pub fn set_otp_enabled(&mut self, otp_enabled: bool) {
         self.otp_enabled = otp_enabled;
-        // TODO: Turn on otp avec le secret
     }
     pub fn set_updated_at(&mut self, updated_at: chrono::DateTime<chrono::Utc>) {
         self.updated_at = updated_at;
@@ -189,8 +205,6 @@ mod tests {
         user.set_one_time_token("token".to_string());
         user.set_is_oauth(true);
         user.set_otp_enabled(true);
-        user.set_otp_secret("otp_secret".to_string());
-        user.set_otp_url("otp_url".to_string());
 
         assert_eq!(user.get_name(), "Doe");
         assert_eq!(user.get_last_name(), "John");
@@ -198,7 +212,5 @@ mod tests {
         assert_eq!(user.get_one_time_token(), Some("token".to_string()));
         assert_eq!(user.get_is_oauth(), true);
         assert_eq!(user.get_otp_enabled(), true);
-        assert_eq!(user.get_otp_secret(), Some("otp_secret".to_string()));
-        assert_eq!(user.get_otp_url(), Some("otp_url".to_string()));
     }
 }
