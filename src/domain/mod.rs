@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod oidc;
 mod otp;
 mod password;

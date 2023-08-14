@@ -32,6 +32,8 @@ impl OidcTokenClaim {
     }
 
     pub fn sign_token(&mut self, key_id: String, private_key: String) -> Result<String, String> {
+        let span = tracing::span!(tracing::Level::DEBUG, "JWTOIDC::sign_token");
+        let _enter = span.enter();
         let header = OidcTokenClaim::new_header(key_id);
         match jsonwebtoken::encode(
             &header,

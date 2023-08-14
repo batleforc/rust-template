@@ -28,7 +28,10 @@ impl Totp {
         let secret = Secret::Encoded(secret);
         let secret_bytes = match secret.to_bytes() {
             Ok(s) => s,
-            Err(err) => return Err(TotpError::InvalidSecret(err.to_string())),
+            Err(err) => {
+                tracing::error!("Invalid secret: {}", err);
+                return Err(TotpError::InvalidSecret(err.to_string()));
+            }
         };
         match TOTP::new(
             Algorithm::SHA1,
@@ -40,7 +43,10 @@ impl Totp {
             email,
         ) {
             Ok(t) => Ok(t),
-            Err(err) => Err(TotpError::InvalidSecret(err.to_string())),
+            Err(err) => {
+                tracing::error!("Invalid TOTP Url: {}", err);
+                Err(TotpError::InvalidSecret(err.to_string()))
+            }
         }
     }
     pub fn get_otp_url(
@@ -50,7 +56,10 @@ impl Totp {
     ) -> Result<String, TotpError> {
         match Totp::get_totp_obj(email, secret, app_name) {
             Ok(totp_object) => Ok(totp_object.get_url()),
-            Err(err) => Err(err),
+            Err(err) => {
+                tracing::error!("Invalid TOTP Url: {}", err);
+                Err(err)
+            }
         }
     }
     pub fn gen_otp_secret() -> Result<String, TotpError> {
@@ -65,7 +74,10 @@ impl Totp {
     ) -> Result<bool, TotpError> {
         let totp = match Totp::get_totp_obj(email, secret, app_name) {
             Ok(t) => t,
-            Err(err) => return Err(TotpError::ValidateSecret(err.to_string())),
+            Err(err) => {
+                tracing::error!("Invalid TOTP error: {}", err);
+                return Err(TotpError::ValidateSecret(err.to_string()));
+            }
         };
         match totp.check_current(&otp) {
             Ok(v) => Ok(v),
