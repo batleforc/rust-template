@@ -1,6 +1,6 @@
 use std::env::VarError;
 
-use super::{front::OidcFront, oidc::OidcHandler};
+use super::{front::OidcFront, oidchandler::OidcHandler};
 
 #[derive(Clone, Debug)]
 pub struct OidcConfig {

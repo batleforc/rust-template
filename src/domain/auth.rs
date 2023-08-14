@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use tracing::Instrument;
 
-use super::{oidc::oidc::OidcHandler, token::TokenClaims};
+use super::{oidc::oidchandler::OidcHandler, token::TokenClaims};
 // Create a function by token that will return the user's email
 // - Access token
 // - Refresh token
@@ -86,11 +86,11 @@ async fn get_user_email_from_oidc_token(
                     tracing::debug!("email: {}", email);
                     return Ok(email);
                 }
-                return Err(TokenExtractError::InvalidToken("Invalid token".to_string()));
+                Err(TokenExtractError::InvalidToken("Invalid token".to_string()))
             }
             Err(err) => {
                 tracing::error!("Invalid token: {}", err);
-                return Err(TokenExtractError::InvalidToken(err.to_string()));
+                Err(TokenExtractError::InvalidToken(err.to_string()))
             }
         }
     }

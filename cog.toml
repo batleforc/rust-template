@@ -7,12 +7,21 @@ post_bump_hooks = []
 pre_package_bump_hooks = []
 post_package_bump_hooks = []
 
-[git_hooks]
+[git_hooks.commit-msg]
+script = """#!/bin/sh
+set -e
+cog verify --file $1
+cargo fmt -v --all --check
+"""
 
 [commit_types]
 
 [changelog]
 path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+owner = "batleforc"
+repository = "rust-template"
 authors = [
   { signature = "Maxime Leriche", username = "batleforc" },
 ]

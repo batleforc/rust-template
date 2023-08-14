@@ -29,6 +29,11 @@ The goal of this rewrite is to make the code more readable, more maintainable an
 - [ ] Dev api for the new BackOffice
 - [ ] Integrates the future VueTS Front
 
+### 4. Good Practices
+
+- [ ] Include Hooks (https://docs.cocogitto.io/)
+- [ ] Follow the commit convention (https://www.conventionalcommits.org/en/v1.0.0/)
+
 ## Hexa WorkFlow
 
 ### Hexa Archi
@@ -170,3 +175,24 @@ classDiagram
     }
     Totp --> TotpError
 ```
+
+## Dev Good Practices
+
+In order to have a clean code, we will follow the following rules:
+
+- Use Cocogitto Hooks (https://docs.cocogitto.io/)
+- Use the commit convention (https://www.conventionalcommits.org/en/v1.0.0/)
+- Test the code
+- Use the tracing lib (https://docs.rs/tracing/latest/tracing/) and follow the OpenTelemetry logic (https://opentelemetry.io/docs/concepts/)
+- Follow the hexagonal archi
+
+### Before commit
+
+- Create a new branch from the dev branch
+- Install the hooks (https://docs.cocogitto.io/) with `cog install-hook --all`
+- Make sure that all the tests are passing (`cargo test`)
+- Make sure that the code you wrote is tested
+- Make sure that the code you wrote is formatted (`cargo fmt`)
+- Make sure that the code you wrote is linted (`cargo clippy`)
+- Make sure that the code you wrote is updated in the Readme.md
+- Make sure that the code you wrote is documented
