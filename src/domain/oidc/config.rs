@@ -1,11 +1,11 @@
 use std::env::VarError;
 
-use super::{front::FrontOidc, oidc::OidcHandler};
+use super::{front::OidcFront, oidc::OidcHandler};
 
 #[derive(Clone, Debug)]
 pub struct OidcConfig {
     pub back: Option<OidcHandler>,
-    pub front: Option<FrontOidc>,
+    pub front: Option<OidcFront>,
     pub oidc_disabled: bool,
 }
 
@@ -62,7 +62,7 @@ impl OidcConfig {
         })
     }
 
-    pub fn new_front() -> Result<FrontOidc, VarError> {
+    pub fn new_front() -> Result<OidcFront, VarError> {
         let span = tracing::span!(tracing::Level::DEBUG, "OidcFrontend::new");
         let _enter = span.enter();
         let client_id = std::env::var("OIDC_FRONT_CLIENT_ID").unwrap();
@@ -72,7 +72,7 @@ impl OidcConfig {
         let scopes = std::env::var("OIDC_FRONT_SCOPES").unwrap();
         let redirect_uri = std::env::var("OIDC_REDIRECT_URI").unwrap();
         tracing::trace!("OidcFrontend created");
-        Ok(FrontOidc {
+        Ok(OidcFront {
             client_id,
             token_url,
             auth_url,
