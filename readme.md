@@ -57,21 +57,20 @@ classDiagram
         +gen_otp_secret() Result< bool,TotpError >
         +create_otp_url(app_name) Result< bool,TotpError >
     }
-    namespace Auth{
-        class TokenExtractError{
-            <<Enum>>
-            InvalidToken(String)
-            OidcDisabled()
-        }
-        class Token{
-            <<Enum>>
-            Access(String)
-            Refresh(String)
-            Oidc(String)
-
-            +get_user_email() Result< String, TokenExtractError >
-        }
+    class TokenExtractError{
+        <<Enum>>
+        InvalidToken(String)
+        OidcDisabled()
     }
+    class Token{
+        <<Enum>>
+        Access(String)
+        Refresh(String)
+        Oidc(String)
+
+        +get_user_email() Result< String, TokenExtractError >
+    }
+    Token --> TokenExtractError
 ```
 
 #### Auth Oidc
@@ -126,48 +125,48 @@ classDiagram
 
 ```mermaid
 classDiagram
-    namespace TokenNS{
-        class TokenError{
-            <<Enum>>
-            InvalidSignToken(String)
-            InvalidToken(String)
-            WrongTokenType(String)
-        }
-        class TokenClaims{
-            +UUID sub
-            +String Email
-            +Usise exp
-            +Usise iat
-            +String iss
-            +Bool refresh
-            +new()
-            gen_header()
-            +get_key()
-            +sign_token()
-            +validate_token()
-        }
+    class TokenError{
+        <<Enum>>
+        InvalidSignToken(String)
+        InvalidToken(String)
+        WrongTokenType(String)
     }
-    namespace PasswordNS{
-        class PasswordError{
-            <<Enum>>
-            HashEngineError(String)
-        }
-        class Password{
-            +hash(password) Result < String,PasswordError >
-            +verify(password,hash) Result < bool,PasswordError >
-        }
+    class TokenClaims{
+        +UUID sub
+        +String Email
+        +Usise exp
+        +Usise iat
+        +String iss
+        +Bool refresh
+        +new()
+        gen_header()
+        +get_key()
+        +sign_token()
+        +validate_token()
     }
-    namespace TotpNS{
-        class TotpError{
-            <<Enum>>
-            InvalidSecret(String)
-            ValidateSecret(String)
-        }
-        class Totp{
-            +get_totp_obj(email, secret, app_name) Result< TOTP, TotpError >
-            +get_otp_url(email, secret, app_name) Result< String, TotpError >
-            +gen_otp_secret() Result< String, TotpError >
-            +validate_otp(otp,email, secret, app_name) Result < bool,TotpError >
-        }
+    TokenClaims --> TokenError
+
+    class PasswordError{
+        <<Enum>>
+        HashEngineError(String)
     }
+    class Password{
+        +hash(password) Result < String,PasswordError >
+        +verify(password,hash) Result < bool,PasswordError >
+    }
+    Password --> PasswordError
+
+
+    class TotpError{
+        <<Enum>>
+        InvalidSecret(String)
+        ValidateSecret(String)
+    }
+    class Totp{
+        +get_totp_obj(email, secret, app_name) Result< TOTP, TotpError >
+        +get_otp_url(email, secret, app_name) Result< String, TotpError >
+        +gen_otp_secret() Result< String, TotpError >
+        +validate_otp(otp,email, secret, app_name) Result < bool,TotpError >
+    }
+    Totp --> TotpError
 ```
