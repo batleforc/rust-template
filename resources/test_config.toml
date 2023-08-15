@@ -1,0 +1,8 @@
+[persistence]
+    host = "localhost-test"
+    port = 5432
+    user = "GB8eE8vh"
+    password = "1OLlRZo1tnNluvx"
+    database = "1pNkVsX3FgFeiQdga"
+    tls = false
+    tls_insecure = false

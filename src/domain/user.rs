@@ -1,6 +1,7 @@
 use super::{
     otp::{Totp, TotpError},
     password::{Password, PasswordError},
+    Entity,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -8,55 +9,44 @@ use uuid::Uuid;
 
 #[derive(ToSchema, Clone, Serialize, Deserialize)]
 pub struct User {
-    id: Uuid,
-    email: String,
-    password: String,
-    nom: String,
-    prenom: String,
-    otp_secret: Option<String>,
-    otp_url: Option<String>,
-    otp_enabled: bool,
-    created_at: chrono::DateTime<chrono::Utc>,
-    updated_at: chrono::DateTime<chrono::Utc>,
-    one_time_token: Option<String>,
-    is_oauth: bool,
+    pub id: Uuid,
+    pub email: String,
+    pub password: String,
+    pub surname: String,
+    pub name: String,
+    pub otp_secret: Option<String>,
+    pub otp_url: Option<String>,
+    pub otp_enabled: bool,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub one_time_token: Option<String>,
+    pub is_oauth: bool,
 }
 
+impl Entity for User {}
+
 impl User {
-    pub fn new(
-        id: Uuid,
-        email: String,
-        password: String,
-        nom: String,
-        prenom: String,
-        otp_secret: Option<String>,
-        otp_url: Option<String>,
-        otp_enabled: bool,
-        created_at: chrono::DateTime<chrono::Utc>,
-        updated_at: chrono::DateTime<chrono::Utc>,
-        one_time_token: Option<String>,
-        is_oauth: bool,
-    ) -> Self {
+    pub fn new(email: String, nom: String, prenom: String, is_oauth: bool) -> Self {
         Self {
-            id,
+            id: Uuid::new_v4(),
             email,
-            password,
-            nom,
-            prenom,
-            otp_secret,
-            otp_url,
-            otp_enabled,
-            created_at,
-            updated_at,
-            one_time_token,
+            password: "".to_string(),
+            surname: nom,
+            name: prenom,
+            otp_secret: None,
+            otp_url: None,
+            otp_enabled: false,
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+            one_time_token: None,
             is_oauth,
         }
     }
-    pub fn get_name(&self) -> String {
-        self.nom.clone()
+    pub fn get_surname(&self) -> String {
+        self.surname.clone()
     }
-    pub fn get_last_name(&self) -> String {
-        self.prenom.clone()
+    pub fn get_name(&self) -> String {
+        self.name.clone()
     }
     pub fn get_email(&self) -> String {
         self.email.clone()
@@ -132,10 +122,10 @@ impl User {
         self.is_oauth = is_oauth;
     }
     pub fn set_nom(&mut self, nom: String) {
-        self.nom = nom;
+        self.surname = nom;
     }
     pub fn set_prenom(&mut self, prenom: String) {
-        self.prenom = prenom;
+        self.name = prenom;
     }
 }
 
@@ -148,20 +138,20 @@ mod tests {
     fn create_user() -> (User, Uuid, chrono::DateTime<chrono::Utc>) {
         let now = chrono::Utc::now();
         let id = Uuid::new_v4();
-        let user = User::new(
+        let user = User {
             id,
-            "john@doe.net".to_string(),
-            "password".to_string(),
-            "John".to_string(),
-            "Doe".to_string(),
-            None,
-            None,
-            false,
-            now,
-            now,
-            None,
-            false,
-        );
+            email: "john@doe.net".to_string(),
+            password: "password".to_string(),
+            name: "John".to_string(),
+            surname: "Doe".to_string(),
+            otp_secret: None,
+            otp_url: None,
+            otp_enabled: false,
+            created_at: now,
+            updated_at: now,
+            one_time_token: None,
+            is_oauth: false,
+        };
         (user, id, now)
     }
 
@@ -169,7 +159,7 @@ mod tests {
     fn test_user_creation() {
         let (user, id, now) = create_user();
         assert_eq!(user.get_name(), "John");
-        assert_eq!(user.get_last_name(), "Doe");
+        assert_eq!(user.get_surname(), "Doe");
         assert_eq!(user.get_email(), "john@doe.net");
         assert_eq!(user.get_id(), id);
         assert_eq!(user.get_otp_secret(), None);
@@ -206,8 +196,8 @@ mod tests {
         user.set_is_oauth(true);
         user.set_otp_enabled(true);
 
-        assert_eq!(user.get_name(), "Doe");
-        assert_eq!(user.get_last_name(), "John");
+        assert_eq!(user.get_surname(), "Doe");
+        assert_eq!(user.get_name(), "John");
         assert_eq!(user.get_updated_at().timestamp(), now_2.timestamp());
         assert_eq!(user.get_one_time_token(), Some("token".to_string()));
         assert_eq!(user.get_is_oauth(), true);
