@@ -4,7 +4,7 @@ use tracing::Instrument;
 
 use crate::domain::token::token::TokenClaims;
 
-use super::oidc::oidchandler::OidcHandler;
+use super::super::oidc::oidchandler::OidcHandler;
 
 #[derive(Clone)]
 pub struct AuthConfig {
