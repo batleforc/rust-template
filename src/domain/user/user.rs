@@ -1,7 +1,7 @@
 use super::{
+    super::Entity,
     otp::{Totp, TotpError},
     password::{Password, PasswordError},
-    Entity,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;

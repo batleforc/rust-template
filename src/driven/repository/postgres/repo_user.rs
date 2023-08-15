@@ -1,5 +1,5 @@
 use crate::{
-    domain::user::User,
+    domain::user::user::User,
     driven::repository::{
         postgres::user::UserPG,
         repo_error::{

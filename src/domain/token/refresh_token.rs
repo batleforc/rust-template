@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::Entity;
+use crate::domain::Entity;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct RefreshToken {
