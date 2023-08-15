@@ -8,6 +8,14 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 #[derive(ToSchema, Clone, Serialize, Deserialize)]
+pub struct PublicUser {
+    pub id: Uuid,
+    pub email: String,
+    pub surname: String,
+    pub name: String,
+}
+
+#[derive(ToSchema, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: Uuid,
     pub email: String,
@@ -129,6 +137,18 @@ impl User {
     }
 }
 
+impl TryInto<PublicUser> for User {
+    type Error = ();
+
+    fn try_into(self) -> Result<PublicUser, Self::Error> {
+        Ok(PublicUser {
+            id: self.id,
+            email: self.email,
+            surname: self.surname,
+            name: self.name,
+        })
+    }
+}
 #[cfg(test)]
 mod tests {
     use std::ops::Add;

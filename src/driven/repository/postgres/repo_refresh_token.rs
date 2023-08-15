@@ -74,9 +74,13 @@ impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRe
         VALUES ($1, $2);";
         let params: [&(dyn ToSql + Sync); 2] = [&refresh_token.user_id, &refresh_token.token];
         match client.execute(stmt, &params).await {
-            Ok(_) => {
-                tracing::info!("Refresh token created");
+            Ok(edited) => {
                 drop(client);
+                if edited == 0 {
+                    tracing::error!("No data created");
+                    return Err(RepoCreateError::InvalidData("No data created".to_string()));
+                }
+                tracing::info!("Refresh token created");
                 Ok(refresh_token)
             }
             Err(e) => {
@@ -163,6 +167,10 @@ impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRe
                     refreshs.push(refresh.try_into().unwrap());
                 }
                 drop(client);
+                if refreshs.is_empty() {
+                    tracing::error!("No refreshs found");
+                    return Err(RepoFindAllError::NotFound);
+                }
                 Ok(refreshs)
             }
             Err(e) => {
@@ -179,8 +187,12 @@ impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRe
         tracing::trace!("Got pool");
         let stmt = "DELETE FROM refresh_tokens WHERE token = $1";
         match client.execute(stmt, &[&token]).await {
-            Ok(_) => {
+            Ok(edited) => {
                 drop(client);
+                if edited == 0 {
+                    tracing::error!("No data deleted");
+                    return Err(RepoDeleteError::NotFound);
+                }
                 Ok(())
             }
             Err(e) => {
@@ -202,8 +214,12 @@ impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRe
         WHERE user_id = $1 AND token = $2;";
         let params: [&(dyn ToSql + Sync); 2] = [&refresh.user_id, &refresh.token];
         match client.execute(stmt, &params).await {
-            Ok(_) => {
+            Ok(edited) => {
                 drop(client);
+                if edited == 0 {
+                    tracing::error!("Error updating refresh: {}", "No refresh found");
+                    return Err(RepoUpdateError::Unknown("No refresh found".to_string()));
+                }
                 Ok(refresh)
             }
             Err(e) => {

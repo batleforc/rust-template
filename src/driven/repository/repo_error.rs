@@ -6,19 +6,18 @@ pub enum RepoCreateError {
 
 #[derive(Debug)]
 pub enum RepoSelectError {
-    NotFound,
     SelectParamInvalid(String),
     Unknown(String),
 }
 
 #[derive(Debug)]
 pub enum RepoFindAllError {
+    NotFound,
     Unknown(String),
 }
 
 #[derive(Debug)]
 pub enum RepoUpdateError {
-    InvalidData(String),
     NotFound,
     Unknown(String),
 }

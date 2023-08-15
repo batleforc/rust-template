@@ -95,8 +95,11 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
             )
             .await
         {
-            Ok(_) => {
+            Ok(edited) => {
                 drop(client);
+                if edited == 0 {
+                    return Err(RepoCreateError::InvalidData("No user created".to_string()));
+                }
                 Ok(user)
             }
             Err(e) => {
@@ -177,6 +180,10 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
                     users.push(user.try_into().unwrap());
                 }
                 drop(client);
+                if users.is_empty() {
+                    tracing::error!("User not found");
+                    return Err(RepoFindAllError::NotFound);
+                }
                 Ok(users)
             }
             Err(e) => {
@@ -188,13 +195,20 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
     }
 
     async fn delete(&self, id: String) -> Result<(), RepoDeleteError> {
+        if id.is_empty() {
+            return Err(RepoDeleteError::InvalidData("No id".to_string()));
+        }
         tracing::trace!("Getting pool");
         let client = self.pool.get().await.unwrap();
         tracing::trace!("Got pool");
         let stmt = "DELETE FROM users WHERE id = $1";
         match client.execute(stmt, &[&id]).await {
-            Ok(_) => {
+            Ok(edited) => {
                 drop(client);
+                if edited == 0 {
+                    tracing::error!("User not found");
+                    return Err(RepoDeleteError::NotFound);
+                }
                 Ok(())
             }
             Err(e) => {
@@ -231,8 +245,12 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
             )
             .await
         {
-            Ok(_) => {
+            Ok(edited) => {
                 drop(client);
+                if edited == 0 {
+                    tracing::error!("User not found");
+                    return Err(RepoUpdateError::NotFound);
+                }
                 Ok(user)
             }
             Err(e) => {

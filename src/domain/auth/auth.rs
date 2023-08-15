@@ -5,10 +5,6 @@ use tracing::Instrument;
 use crate::domain::token::token::TokenClaims;
 
 use super::oidc::oidchandler::OidcHandler;
-// Create a function by token that will return the user's email
-// - Access token
-// - Refresh token
-// - OIDC token
 
 #[derive(Clone)]
 pub struct AuthConfig {
