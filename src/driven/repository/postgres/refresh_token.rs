@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::domain::refresh_token::RefreshToken;
+use crate::domain::token::refresh_token::RefreshToken;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SearchRefreshToken {

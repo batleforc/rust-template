@@ -2,7 +2,6 @@ use super::super::SearchEntity;
 use crate::domain::user::User;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use tokio_postgres::types::ToSql;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

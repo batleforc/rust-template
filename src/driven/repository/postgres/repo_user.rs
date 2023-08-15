@@ -12,7 +12,6 @@ use super::{super::repo::Repository, config::ConfigPG, user::SearchUser};
 use async_trait::async_trait;
 use deadpool_postgres::Pool;
 use tokio_postgres::types::ToSql;
-use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct UserPGRepo {

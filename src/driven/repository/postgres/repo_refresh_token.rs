@@ -1,5 +1,5 @@
 use crate::{
-    domain::refresh_token::RefreshToken,
+    domain::token::refresh_token::RefreshToken,
     driven::repository::{
         postgres::refresh_token::RefreshTokenPG,
         repo_error::{
@@ -35,10 +35,10 @@ impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRe
         let extension_stmt = "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";";
         let create_table_stmt = "
         CREATE TABLE IF NOT EXISTS refresh_tokens (
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          user_id UUID NOT NULL,
-          token VARCHAR NOT NULL,
-          PRIMARY KEY (user_id, token)
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            user_id UUID NOT NULL,
+            token VARCHAR NOT NULL,
+            PRIMARY KEY (user_id, token)
         );";
         match client.execute(extension_stmt, &[]).await {
             Ok(_) => {

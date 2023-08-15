@@ -2,7 +2,9 @@ use std::fmt::Display;
 
 use tracing::Instrument;
 
-use super::{oidc::oidchandler::OidcHandler, token::TokenClaims};
+use crate::domain::token::token::TokenClaims;
+
+use super::oidc::oidchandler::OidcHandler;
 // Create a function by token that will return the user's email
 // - Access token
 // - Refresh token
