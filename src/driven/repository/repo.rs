@@ -37,5 +37,5 @@ where
     async fn update(&self, entity: T) -> Result<T, RepoUpdateError>;
 
     /// Delete one single record from the persistence system
-    async fn delete(&self, id: &Uuid) -> Result<(), RepoDeleteError>;
+    async fn delete(&self, id: String) -> Result<(), RepoDeleteError>;
 }

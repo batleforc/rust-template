@@ -1,54 +1,45 @@
 use crate::{
-    domain::user::User,
+    domain::refresh_token::RefreshToken,
     driven::repository::{
-        postgres::user::UserPG,
+        postgres::refresh_token::RefreshTokenPG,
         repo_error::{
             RepoCreateError, RepoDeleteError, RepoFindAllError, RepoSelectError, RepoUpdateError,
         },
     },
 };
 
-use super::{super::repo::Repository, config::ConfigPG, user::SearchUser};
+use super::{super::repo::Repository, config::ConfigPG, refresh_token::SearchRefreshToken};
 use async_trait::async_trait;
 use deadpool_postgres::Pool;
 use tokio_postgres::types::ToSql;
-use uuid::Uuid;
 
 #[derive(Debug, Clone)]
-pub struct UserPGRepo {
+pub struct RefreshTokenPGRepo {
     pub pool: Pool,
 }
 
 #[async_trait]
-impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
+impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRepo {
     fn new(config: &ConfigPG) -> Result<Self, String>
     where
         Self: Sized,
     {
         let pool = config.pool.clone().unwrap().clone();
-        Ok(UserPGRepo { pool })
+        Ok(RefreshTokenPGRepo { pool })
     }
     async fn init(&self) -> Result<(), String> {
-        tracing::info!("Initializing user table");
+        tracing::info!("Initializing refresh token table");
         tracing::trace!("Getting pool");
         let client = self.pool.get().await.unwrap();
         tracing::trace!("Got pool");
         let extension_stmt = "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";";
         let create_table_stmt = "
-            CREATE TABLE IF NOT EXISTS users (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                email VARCHAR(255) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
-                nom VARCHAR(255) NOT NULL,
-                prenom VARCHAR(255) NOT NULL,
-                otp_secret VARCHAR(255),
-                otp_url VARCHAR(255),
-                otp_enabled BOOLEAN DEFAULT FALSE,
-                one_time_token VARCHAR(255),
-                is_oauth BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            );";
+        CREATE TABLE IF NOT EXISTS refresh_tokens (
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          user_id UUID NOT NULL,
+          token VARCHAR NOT NULL,
+          PRIMARY KEY (user_id, token)
+        );";
         match client.execute(extension_stmt, &[]).await {
             Ok(_) => {
                 tracing::info!("Extension uuid-ossp created");
@@ -61,11 +52,11 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
         }
         match client.execute(create_table_stmt, &[]).await {
             Ok(_) => {
-                tracing::info!("Table users created");
+                tracing::info!("Table refresh token created");
                 drop(client);
             }
             Err(e) => {
-                tracing::error!("Error creating table users: {}", e);
+                tracing::error!("Error creating table refresh token: {}", e);
                 drop(client);
                 return Err(e.to_string());
             }
@@ -73,41 +64,29 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
         Ok(())
     }
 
-    async fn create(&self, user: User) -> Result<User, RepoCreateError> {
+    async fn create(&self, refresh_token: RefreshToken) -> Result<RefreshToken, RepoCreateError> {
+        tracing::info!("Creating refresh token");
         tracing::trace!("Getting pool");
         let client = self.pool.get().await.unwrap();
         tracing::trace!("Got pool");
         let stmt = "
-            INSERT INTO users (email, password, name, surname, otp_secret, otp_url, otp_enabled, is_oauth)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8,)";
-        match client
-            .execute(
-                stmt,
-                &[
-                    &user.email,
-                    &user.password,
-                    &user.name,
-                    &user.surname,
-                    &user.otp_secret,
-                    &user.otp_url,
-                    &user.otp_enabled,
-                    &user.is_oauth,
-                ],
-            )
-            .await
-        {
+        INSERT INTO refresh_tokens (user_id, token)
+        VALUES ($1, $2);";
+        let params: [&(dyn ToSql + Sync); 2] = [&refresh_token.user_id, &refresh_token.token];
+        match client.execute(stmt, &params).await {
             Ok(_) => {
+                tracing::info!("Refresh token created");
                 drop(client);
-                Ok(user)
+                Ok(refresh_token)
             }
             Err(e) => {
+                tracing::error!("Error creating refresh token: {}", e);
                 drop(client);
                 Err(RepoCreateError::Unknown(e.to_string()))
             }
         }
     }
-
-    async fn find_one(&self, search: SearchUser) -> Result<User, RepoSelectError> {
+    async fn find_one(&self, search: SearchRefreshToken) -> Result<RefreshToken, RepoSelectError> {
         tracing::trace!("Getting pool");
         let client = self.pool.get().await.unwrap();
         tracing::trace!("Got pool");
@@ -125,26 +104,29 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
         }
         match client
             .query_one(
-                &format!("SELECT * FROM users WHERE {}", search_querry),
+                &format!("SELECT * FROM refresh_tokens WHERE {}", search_querry),
                 &param,
             )
             .await
         {
             Ok(row) => {
                 tracing::trace!("Got row");
-                let user = UserPG::from_row(&row);
+                let refresh = RefreshTokenPG::from_row(&row);
                 drop(client);
-                Ok(user.try_into().unwrap())
+                Ok(refresh.try_into().unwrap())
             }
             Err(e) => {
-                tracing::error!("Error finding user: {}", e);
+                tracing::error!("Error finding refresh: {}", e);
                 drop(client);
                 Err(RepoSelectError::Unknown(e.to_string()))
             }
         }
     }
 
-    async fn find_all(&self, search: SearchUser) -> Result<Vec<User>, RepoFindAllError> {
+    async fn find_all(
+        &self,
+        search: SearchRefreshToken,
+    ) -> Result<Vec<RefreshToken>, RepoFindAllError> {
         tracing::trace!("Getting pool");
         let client = self.pool.get().await.unwrap();
         tracing::trace!("Got pool");
@@ -161,83 +143,71 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
                         param.push(i as &(dyn ToSql + Sync));
                     }
                     client
-                        .query(&format!("SELECT * FROM users WHERE {}", querry), &param)
+                        .query(
+                            &format!("SELECT * FROM refresh_tokens WHERE {}", querry),
+                            &param,
+                        )
                         .await
                 }
                 Err(_) => {
                     tracing::trace!("No search param");
-                    client.query("SELECT * FROM users", &[]).await
+                    client.query("SELECT * FROM refresh_tokens", &[]).await
                 }
             }
         } {
             Ok(rows) => {
                 tracing::trace!("Got rows");
-                let mut users = Vec::new();
+                let mut refreshs = Vec::new();
                 for row in rows {
-                    let user = UserPG::from_row(&row);
-                    users.push(user.try_into().unwrap());
+                    let refresh = RefreshTokenPG::from_row(&row);
+                    refreshs.push(refresh.try_into().unwrap());
                 }
                 drop(client);
-                Ok(users)
+                Ok(refreshs)
             }
             Err(e) => {
-                tracing::error!("Error finding users: {}", e);
+                tracing::error!("Error finding refreshs: {}", e);
                 drop(client);
                 Err(RepoFindAllError::Unknown(e.to_string()))
             }
         }
     }
 
-    async fn delete(&self, id: String) -> Result<(), RepoDeleteError> {
+    async fn delete(&self, token: String) -> Result<(), RepoDeleteError> {
         tracing::trace!("Getting pool");
         let client = self.pool.get().await.unwrap();
         tracing::trace!("Got pool");
-        let stmt = "DELETE FROM users WHERE id = $1";
-        match client.execute(stmt, &[&id]).await {
+        let stmt = "DELETE FROM refresh_tokens WHERE token = $1";
+        match client.execute(stmt, &[&token]).await {
             Ok(_) => {
                 drop(client);
                 Ok(())
             }
             Err(e) => {
-                tracing::error!("Error deleting user: {}", e);
+                tracing::error!("Error deleting refresh: {}", e);
                 drop(client);
                 Err(RepoDeleteError::Unknown(e.to_string()))
             }
         }
     }
 
-    async fn update(&self, user: User) -> Result<User, RepoUpdateError> {
+    async fn update(&self, refresh: RefreshToken) -> Result<RefreshToken, RepoUpdateError> {
+        tracing::info!("DO NOT USE THE UPDATE FUNCTION for refresh tokens");
         tracing::trace!("Getting pool");
         let client = self.pool.get().await.unwrap();
         tracing::trace!("Got pool");
         let stmt = "
-            UPDATE users
-            SET email = $1, password = $2, name = $3, surname = $4, otp_secret = $5, otp_url = $6, otp_enabled = $7, is_oauth = $8, updated_at = $9
-            WHERE id = $10";
-        match client
-            .execute(
-                stmt,
-                &[
-                    &user.email,
-                    &user.password,
-                    &user.name,
-                    &user.surname,
-                    &user.otp_secret,
-                    &user.otp_url,
-                    &user.otp_enabled,
-                    &user.is_oauth,
-                    &user.updated_at,
-                    &user.id,
-                ],
-            )
-            .await
-        {
+        UPDATE refresh_tokens
+        SET user_id = $1, token = $2
+        WHERE user_id = $1 AND token = $2;";
+        let params: [&(dyn ToSql + Sync); 2] = [&refresh.user_id, &refresh.token];
+        match client.execute(stmt, &params).await {
             Ok(_) => {
                 drop(client);
-                Ok(user)
+                Ok(refresh)
             }
             Err(e) => {
-                tracing::error!("Error updating user: {}", e);
+                tracing::error!("Error updating refresh: {}", e);
                 drop(client);
                 Err(RepoUpdateError::Unknown(e.to_string()))
             }

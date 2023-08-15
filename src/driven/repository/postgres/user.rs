@@ -22,7 +22,7 @@ impl SearchUser {
         let mut params: Vec<String> = Vec::new();
         let mut index = 1;
         if let Some(id) = &self.id {
-            query.push_str("id = $");
+            query.push_str("id LIKE $");
             query.push_str(&index.to_string());
             params.push(id.to_string());
             index += 1;
@@ -31,7 +31,7 @@ impl SearchUser {
             if !query.is_empty() {
                 query.push_str(" AND ");
             }
-            query.push_str("email = $");
+            query.push_str("email LIKE $");
             query.push_str(&index.to_string());
             params.push(email.to_string());
             index += 1;
@@ -40,7 +40,7 @@ impl SearchUser {
             if !query.is_empty() {
                 query.push_str(" AND ");
             }
-            query.push_str("one_time_token = $");
+            query.push_str("one_time_token LIKE $");
             query.push_str(&index.to_string());
             params.push(one_time_token.to_string());
             index += 1;
@@ -49,7 +49,7 @@ impl SearchUser {
             if !query.is_empty() {
                 query.push_str(" AND ");
             }
-            query.push_str("surname = $");
+            query.push_str("surname LIKE $");
             query.push_str(&index.to_string());
             params.push(surname.to_string());
             index += 1;
@@ -58,7 +58,7 @@ impl SearchUser {
             if !query.is_empty() {
                 query.push_str(" AND ");
             }
-            query.push_str("name = $");
+            query.push_str("name LIKE $");
             query.push_str(&index.to_string());
             params.push(name.to_string());
         }
