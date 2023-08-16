@@ -52,6 +52,12 @@ pub fn parse_local_config() -> Config {
     parse_config(d)
 }
 
+pub fn parse_test_config() -> Config {
+    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    d.push("resources/test_config.toml");
+    parse_config(d)
+}
+
 pub fn parse_config(path_buf: PathBuf) -> Config {
     let config: Config = parse_config_from_file(path_buf);
     override_config_with_env_vars(config)

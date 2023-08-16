@@ -37,4 +37,7 @@ where
 
     /// Delete one single record from the persistence system
     async fn delete(&self, id: String) -> Result<(), RepoDeleteError>;
+
+    /// Delete all records corresponding to the search criteria from the persistence system
+    async fn delete_many(&self, search: A) -> Result<u64, RepoDeleteError>;
 }

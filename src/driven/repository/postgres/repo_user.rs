@@ -84,12 +84,13 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
             let client = self.pool.get().await.unwrap();
             tracing::trace!("Got pool");
             let stmt = "
-                INSERT INTO users (email, password, name, surname, otp_secret, otp_url, otp_enabled, is_oauth)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8,)";
+                INSERT INTO users (id,email, password, name, surname, otp_secret, otp_url, otp_enabled, is_oauth)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, &9)";
             match client
                 .execute(
                     stmt,
                     &[
+                        &user.id,
                         &user.email,
                         &user.password,
                         &user.name,
@@ -233,6 +234,46 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
                 }
                 Err(e) => {
                     tracing::error!("Error deleting user: {}", e);
+                    drop(client);
+                    Err(RepoDeleteError::Unknown(e.to_string()))
+                }
+            }
+        }
+        .instrument(span)
+        .await
+    }
+
+    async fn delete_many(&self, search: SearchUser) -> Result<u64, RepoDeleteError> {
+        let span = tracing::span!(tracing::Level::INFO, "UserPGRepo::delete_many",);
+        async move {
+            tracing::trace!("Getting pool");
+            let client = self.pool.get().await.unwrap();
+            tracing::trace!("Got pool");
+            let (search_querry, search_param) = match search.turn_into_search() {
+                Ok((querry, param)) => (querry, param),
+                Err(_) => return Err(RepoDeleteError::InvalidData("No search param".to_string())),
+            };
+            let mut param: Vec<&(dyn ToSql + Sync)> = Vec::new();
+            for i in &search_param {
+                param.push(i as &(dyn ToSql + Sync));
+            }
+            match client
+                .execute(
+                    &format!("DELETE FROM users WHERE {}", search_querry),
+                    &param,
+                )
+                .await
+            {
+                Ok(edited) => {
+                    drop(client);
+                    if edited == 0 {
+                        tracing::error!("No data deleted");
+                        return Err(RepoDeleteError::NotFound);
+                    }
+                    Ok(edited)
+                }
+                Err(e) => {
+                    tracing::error!("Error deleting refresh: {}", e);
                     drop(client);
                     Err(RepoDeleteError::Unknown(e.to_string()))
                 }
