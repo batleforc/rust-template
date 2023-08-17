@@ -40,6 +40,7 @@ impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRe
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             user_id UUID NOT NULL,
             token VARCHAR NOT NULL,
+            email VARCHAR NOT NULL,
             PRIMARY KEY (user_id, token)
         );";
             match client.execute(extension_stmt, &[]).await {
@@ -76,9 +77,13 @@ impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRe
             let client = self.pool.get().await.unwrap();
             tracing::trace!("Got pool");
             let stmt = "
-        INSERT INTO refresh_tokens (user_id, token)
-        VALUES ($1, $2);";
-            let params: [&(dyn ToSql + Sync); 2] = [&refresh_token.user_id, &refresh_token.token];
+        INSERT INTO refresh_tokens (user_id, token, email)
+        VALUES ($1, $2, $3);";
+            let params: [&(dyn ToSql + Sync); 3] = [
+                &refresh_token.user_id,
+                &refresh_token.token,
+                &refresh_token.email,
+            ];
             match client.execute(stmt, &params).await {
                 Ok(edited) => {
                     drop(client);
@@ -300,5 +305,53 @@ impl Repository<RefreshToken, SearchRefreshToken, ConfigPG> for RefreshTokenPGRe
         }
         .instrument(span)
         .await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serial_test::serial;
+
+    use crate::config::parse_test_config;
+
+    use super::*;
+
+    #[serial(repo_user)]
+    #[actix_web::test]
+    async fn test_token() {
+        let main_config = parse_test_config();
+        let config = &ConfigPG::new(main_config.persistence);
+        let repo: RefreshTokenPGRepo =
+            match Repository::<RefreshToken, SearchRefreshToken, ConfigPG>::new(config) {
+                Ok(repo) => repo,
+                Err(err) => panic!("Error creating repository: {}", err),
+            };
+        match repo.init().await {
+            Ok(_) => (),
+            Err(err) => panic!("Error creating repository: {}", err),
+        };
+        let token = RefreshToken::new(
+            "test".to_string(),
+            "test@test.fr".to_string(),
+            uuid::Uuid::new_v4(),
+        );
+        match repo.create(token.clone()).await {
+            Ok(_) => (),
+            Err(err) => panic!("Error creating token: {:?}", err.to_string()),
+        };
+        match repo.find_all(SearchRefreshToken::new()).await {
+            Ok(users) => {
+                assert_eq!(users.len(), 1);
+                assert_eq!(users[0].email, token.email);
+                assert_eq!(users[0].user_id, token.user_id);
+                assert_eq!(users[0].token, token.token);
+            }
+            Err(err) => panic!("Error finding token: {:#?}", err),
+        };
+        match repo.delete(token.token).await {
+            Ok(_) => (),
+            Err(err) => panic!("Error deleting token: {:#?}", err),
+        };
+        config.pool.clone().unwrap().close();
     }
 }

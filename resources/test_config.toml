@@ -1,6 +1,6 @@
 [persistence]
-    host = "localhost-test"
-    port = 5432
+    host = "localhost"
+    port = 5433
     user = "GB8eE8vh"
     password = "1OLlRZo1tnNluvx"
     database = "1pNkVsX3FgFeiQdga"

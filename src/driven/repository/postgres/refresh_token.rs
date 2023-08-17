@@ -16,6 +16,14 @@ pub struct SearchRefreshToken {
 impl SearchEntity for SearchRefreshToken {}
 
 impl SearchRefreshToken {
+    pub fn new() -> Self {
+        SearchRefreshToken {
+            user_id: None,
+            token: None,
+            email: None,
+            created_before: None,
+        }
+    }
     pub fn turn_into_search(&self) -> Result<(String, Vec<String>), ()> {
         let mut query = String::new();
         let mut params: Vec<String> = Vec::new();

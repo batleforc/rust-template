@@ -111,15 +111,15 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    #[serial]
+    #[serial(config)]
     fn should_parse_a_config() {
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("resources/test_config.toml");
         let config = parse_config(d);
         let pers = config.persistence;
 
-        assert_eq!("localhost-test", pers.host);
-        assert_eq!(5432, pers.port.unwrap());
+        assert_eq!("localhost", pers.host);
+        assert_eq!(5433, pers.port.unwrap());
         assert_eq!("GB8eE8vh", pers.user);
         assert_eq!("1OLlRZo1tnNluvx", pers.password);
         assert_eq!("1pNkVsX3FgFeiQdga", pers.database);
@@ -128,7 +128,7 @@ mod tests {
     }
 
     #[test]
-    #[serial]
+    #[serial(config)]
     fn should_override_a_parsed_config_with_env_vars() {
         env::set_var(PERSISTENCE_HOST, "my_host");
         env::set_var(PERSISTENCE_PORT, "1111");

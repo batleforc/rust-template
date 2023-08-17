@@ -16,6 +16,15 @@ pub struct SearchUser {
 impl SearchEntity for SearchUser {}
 
 impl SearchUser {
+    pub fn new() -> Self {
+        SearchUser {
+            id: None,
+            email: None,
+            one_time_token: None,
+            surname: None,
+            name: None,
+        }
+    }
     pub fn turn_into_search(&self) -> Result<(String, Vec<String>), ()> {
         let mut query = String::new();
         let mut params: Vec<String> = Vec::new();

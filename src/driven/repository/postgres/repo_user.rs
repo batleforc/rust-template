@@ -13,6 +13,7 @@ use async_trait::async_trait;
 use deadpool_postgres::Pool;
 use tokio_postgres::types::ToSql;
 use tracing::Instrument;
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct UserPGRepo {
@@ -40,8 +41,8 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
                 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                 email VARCHAR(255) NOT NULL UNIQUE,
                 password VARCHAR(255) NOT NULL,
-                nom VARCHAR(255) NOT NULL,
-                prenom VARCHAR(255) NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                surname VARCHAR(255) NOT NULL,
                 otp_secret VARCHAR(255),
                 otp_url VARCHAR(255),
                 otp_enabled BOOLEAN DEFAULT FALSE,
@@ -84,8 +85,8 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
             let client = self.pool.get().await.unwrap();
             tracing::trace!("Got pool");
             let stmt = "
-                INSERT INTO users (id,email, password, name, surname, otp_secret, otp_url, otp_enabled, is_oauth)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, &9)";
+                INSERT INTO users (id, email, password, name, surname, otp_secret, otp_url, otp_enabled, is_oauth)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
             match client
                 .execute(
                     stmt,
@@ -217,13 +218,17 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
         if id.is_empty() {
             return Err(RepoDeleteError::InvalidData("No id".to_string()));
         }
+        let parsed_id = match Uuid::parse_str(&id) {
+            Ok(id) => id,
+            Err(_) => return Err(RepoDeleteError::InvalidData("Invalid id".to_string())),
+        };
         let span = tracing::span!(tracing::Level::INFO, "UserPGRepo::delete");
         async move {
             tracing::trace!("Getting pool");
             let client = self.pool.get().await.unwrap();
             tracing::trace!("Got pool");
             let stmt = "DELETE FROM users WHERE id = $1";
-            match client.execute(stmt, &[&id]).await {
+            match client.execute(stmt, &[&parsed_id]).await {
                 Ok(edited) => {
                     drop(client);
                     if edited == 0 {
@@ -305,7 +310,7 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
                         &user.otp_url,
                         &user.otp_enabled,
                         &user.is_oauth,
-                        &user.updated_at,
+                        &chrono::Utc::now(),
                         &user.id,
                     ],
                 )
@@ -326,5 +331,138 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
                 }
             }
         }.instrument(span).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serial_test::serial;
+
+    use crate::config::parse_test_config;
+
+    use super::*;
+
+    #[serial(repo_user)]
+    #[actix_web::test]
+    async fn test_user() {
+        let main_config = parse_test_config();
+        let config = &ConfigPG::new(main_config.persistence);
+        let repo: UserPGRepo = match Repository::<User, SearchUser, ConfigPG>::new(config) {
+            Ok(repo) => repo,
+            Err(err) => panic!("Error creating repository: {}", err),
+        };
+        match repo.init().await {
+            Ok(_) => (),
+            Err(err) => panic!("Error creating repository: {}", err),
+        };
+        let mut user = User::new(
+            "max@github.com".to_string(),
+            "weebo".to_string(),
+            "Max".to_string(),
+            false,
+        );
+        match repo.create(user.clone()).await {
+            Ok(_) => (),
+            Err(err) => panic!("Error creating user: {:?}", err.to_string()),
+        };
+        match repo.find_all(SearchUser::new()).await {
+            Ok(users) => {
+                assert_eq!(users.len(), 1);
+                assert_eq!(users[0].email, user.email);
+                assert_eq!(users[0].password, user.password);
+                assert_eq!(users[0].name, user.name);
+                assert_eq!(users[0].surname, user.surname);
+                assert_eq!(users[0].otp_enabled, user.otp_enabled);
+                assert_eq!(users[0].is_oauth, user.is_oauth);
+            }
+            Err(err) => panic!("Error finding user: {:#?}", err),
+        };
+        user.name = "Weebz".to_string();
+        user.surname = "Mustermann".to_string();
+        user.otp_enabled = true;
+        match repo.update(user.clone()).await {
+            Ok(_) => (),
+            Err(err) => panic!("Error updating user: {:#?}", err),
+        };
+        match repo.find_all(SearchUser::new()).await {
+            Ok(users) => {
+                assert_eq!(users.len(), 1);
+                assert_eq!(users[0].email, user.email);
+                assert_eq!(users[0].password, user.password);
+                assert_eq!(users[0].name, user.name);
+                assert_eq!(users[0].surname, user.surname);
+                assert_eq!(users[0].otp_enabled, user.otp_enabled);
+                assert_eq!(users[0].is_oauth, user.is_oauth);
+            }
+            Err(err) => panic!("Error finding user: {:#?}", err),
+        };
+        match repo.delete(user.id.to_string()).await {
+            Ok(_) => (),
+            Err(err) => panic!("Error deleting user: {:#?}", err),
+        };
+        config.pool.clone().unwrap().close();
+    }
+
+    #[serial(repo_user)]
+    #[actix_web::test]
+    async fn test_user_search() {
+        let main_config = parse_test_config();
+        let config = &ConfigPG::new(main_config.persistence);
+        let repo: UserPGRepo = match Repository::<User, SearchUser, ConfigPG>::new(config) {
+            Ok(repo) => repo,
+            Err(err) => panic!("Error creating repository: {}", err),
+        };
+        match repo.init().await {
+            Ok(_) => (),
+            Err(err) => panic!("Error creating repository: {}", err),
+        };
+        for i in 0..10 {
+            let user = User::new(
+                format!("max{}@github.com", i).to_string(),
+                format!("weeb{}", i).to_string(),
+                format!("max{}", i).to_string(),
+                false,
+            );
+            match repo.create(user.clone()).await {
+                Ok(_) => (),
+                Err(err) => panic!("Error creating user{}: {:#?}", i, err),
+            };
+        }
+        match repo.find_all(SearchUser::new()).await {
+            Ok(users) => {
+                assert_eq!(users.len(), 10);
+            }
+            Err(err) => panic!("Error finding user: {:#?}", err),
+        };
+        let mut search = SearchUser::new();
+        search.email = Some("%max1%".to_string());
+        match repo.find_one(search.clone()).await {
+            Ok(user) => {
+                assert_eq!(user.email, "max1@github.com".to_string());
+                assert_eq!(user.name, "max1".to_string());
+                assert_eq!(user.surname, "weeb1".to_string());
+            }
+            Err(err) => panic!("Error finding user: {:#?}", err),
+        };
+        match repo.find_all(search.clone()).await {
+            Ok(users) => {
+                assert_eq!(users.len(), 1);
+                assert_eq!(users[0].email, "max1@github.com".to_string());
+                assert_eq!(users[0].name, "max1".to_string());
+                assert_eq!(users[0].surname, "weeb1".to_string());
+            }
+            Err(err) => panic!("Error finding user: {:#?}", err),
+        };
+        clean_db(repo).await;
+        config.pool.clone().unwrap().close();
+    }
+
+    async fn clean_db(repo: UserPGRepo) {
+        let mut search = SearchUser::new();
+        search.email = Some("%".to_string());
+        match repo.delete_many(search).await {
+            Ok(nbr) => println!("Deleted {} users", nbr),
+            Err(err) => panic!("Error deleting users: {:#?}", err),
+        }
     }
 }

@@ -1,0 +1,9 @@
+services:
+  db-test:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: GB8eE8vh
+      POSTGRES_PASSWORD: 1OLlRZo1tnNluvx
+      POSTGRES_DB: 1pNkVsX3FgFeiQdga
+    ports:
+      - 5433:5432

@@ -34,13 +34,13 @@ pub struct User {
 impl Entity for User {}
 
 impl User {
-    pub fn new(email: String, nom: String, prenom: String, is_oauth: bool) -> Self {
+    pub fn new(email: String, surname: String, name: String, is_oauth: bool) -> Self {
         Self {
             id: Uuid::new_v4(),
             email,
             password: "".to_string(),
-            surname: nom,
-            name: prenom,
+            surname,
+            name,
             otp_secret: None,
             otp_url: None,
             otp_enabled: false,
