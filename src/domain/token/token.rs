@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
+use crate::config::Auth;
+
 #[derive(Debug, PartialEq)]
 pub enum TokenError {
     InvalidSignToken(String),
@@ -59,22 +61,10 @@ impl TokenClaims {
             ..Default::default()
         }
     }
-    pub fn get_key(refresh: bool) -> String {
-        if refresh {
-            match env::var("REFRESH_TOKEN_SIGN") {
-                Ok(val) => val,
-                Err(_) => "lambda_refresh_token_sign".to_string(),
-            }
-        } else {
-            match env::var("ACCESS_TOKEN_SIGN") {
-                Ok(val) => val,
-                Err(_) => "lambda_token_sign".to_string(),
-            }
-        }
-    }
-    pub fn sign_token(&mut self) -> Result<String, TokenError> {
+
+    pub fn sign_token(&mut self, config: Auth) -> Result<String, TokenError> {
         let header = Self::gen_header(self.refresh);
-        let key_string = Self::get_key(self.refresh);
+        let key_string = config.get_key(self.refresh);
         let key = key_string.as_bytes();
         match encode(&header, self, &EncodingKey::from_secret(key)) {
             Ok(token) => Ok(token),
@@ -82,8 +72,8 @@ impl TokenClaims {
         }
     }
 
-    pub fn validate_token(token: String, refresh: bool) -> Result<Self, TokenError> {
-        let key_string = Self::get_key(refresh);
+    pub fn validate_token(token: String, refresh: bool, config: Auth) -> Result<Self, TokenError> {
+        let key_string = config.get_key(refresh);
         let key = key_string.as_bytes();
         match jsonwebtoken::decode::<TokenClaims>(
             &token,
@@ -106,6 +96,8 @@ impl TokenClaims {
 
 #[cfg(test)]
 mod tests {
+    use crate::config::parse_test_config;
+
     use super::*;
 
     fn init_default_token_claims(
@@ -123,11 +115,12 @@ mod tests {
         let sub = Uuid::new_v4();
         let email = "joseph@joestar.com".to_string();
         let iss = "lambda".to_string();
+        let config = parse_test_config();
 
         for refresh in vec![true, false].iter() {
             let (mut token_claims, _, _) =
                 init_default_token_claims(sub, email.clone(), iss.clone(), *refresh);
-            let token = match token_claims.sign_token() {
+            let token = match token_claims.sign_token(config.auth.clone()) {
                 Ok(token) => {
                     assert!(true);
                     token
@@ -136,15 +129,16 @@ mod tests {
                     panic!("Failed to sign token")
                 }
             };
-            let token_claims = match TokenClaims::validate_token(token, *refresh) {
-                Ok(token_claims) => {
-                    assert!(true);
-                    token_claims
-                }
-                Err(_) => {
-                    panic!("Failed to validate token")
-                }
-            };
+            let token_claims =
+                match TokenClaims::validate_token(token, *refresh, config.auth.clone()) {
+                    Ok(token_claims) => {
+                        assert!(true);
+                        token_claims
+                    }
+                    Err(_) => {
+                        panic!("Failed to validate token")
+                    }
+                };
             assert_eq!(token_claims.sub, sub);
             assert_eq!(token_claims.email, email);
             assert_eq!(token_claims.iss, iss);

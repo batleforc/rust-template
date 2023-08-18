@@ -3,6 +3,9 @@ use std::env;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 
+use crate::domain::oidc::front::OidcFront;
+use crate::domain::oidc::oidchandler::OidcHandler;
+
 const PERSISTENCE_HOST: &str = "PERSISTENCE_HOST";
 const PERSISTENCE_PORT: &str = "PERSISTENCE_PORT";
 const PERSISTENCE_USER: &str = "PERSISTENCE_USER";
@@ -11,10 +14,52 @@ const PERSISTENCE_DB: &str = "PERSISTENCE_DB";
 const PERSISTENCE_SCHEMA_COLLECTION: &str = "PERSISTENCE_SCHEMA";
 const PERSISTENCE_TLS: &str = "PERSISTENCE_TLS";
 const PERSISTENCE_TLS_INSECURE: &str = "PERSISTENCE_TLS_INSECURE";
+const APP_NAME: &str = "APP_NAME";
+
+const OIDC_ENABLED: &str = "OIDC_ENABLED";
+const OIDC_CLIENT_ID: &str = "OIDC_CLIENT_ID";
+const OIDC_CLIENT_SECRET: &str = "OIDC_CLIENT_SECRET";
+const OIDC_ISSUER: &str = "OIDC_ISSUER";
+const OIDC_REDIRECT_URI: &str = "OIDC_REDIRECT_URI";
+const OIDC_SCOPES: &str = "OIDC_SCOPES";
+const OIDC_USERINFO_URL: &str = "OIDC_USERINFO_URL";
+const OIDC_INTROSPECTION_URL: &str = "OIDC_INTROSPECTION_URL";
+const OIDC_KEY_ID: &str = "OIDC_KEY_ID";
+const OIDC_CLIENT_ASSERTION_TYPE: &str = "OIDC_CLIENT_ASSERTION_TYPE";
+
+const OIDC_FRONT_CLIENT_ID: &str = "OIDC_FRONT_CLIENT_ID";
+const OIDC_FRONT_TOKEN_URL: &str = "OIDC_FRONT_TOKEN_URL";
+const OIDC_FRONT_AUTH_URL: &str = "OIDC_FRONT_AUTH_URL";
+const OIDC_FRONT_ISSUER: &str = "OIDC_FRONT_ISSUER";
+const OIDC_FRONT_SCOPES: &str = "OIDC_FRONT_SCOPES";
+const OIDC_FRONT_REDIRECT_URL: &str = "OIDC_FRONT_REDIRECT_URL";
+
+const AUTH_REFRESH_TOKEN_SIGN: &str = "AUTH_REFRESH_TOKEN_SIGN";
+const AUTH_ACCESS_TOKEN_SIGN: &str = "AUTH_ACCESS_TOKEN_SIGN";
 
 #[derive(Deserialize)]
 pub struct Config {
+    pub app_name: String,
+    pub oidc_enabled: bool,
     pub persistence: PersistenceConfig,
+    pub oidc_front: OidcFront,
+    pub oidc_back: OidcHandler,
+    pub auth: Auth,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct Auth {
+    pub refresh_token_sign: String,
+    pub access_token_sign: String,
+}
+
+impl Auth {
+    pub fn get_key(&self, refresh: bool) -> String {
+        match refresh {
+            true => self.refresh_token_sign.clone(),
+            false => self.access_token_sign.clone(),
+        }
+    }
 }
 
 #[derive(Deserialize, Clone)]
@@ -70,8 +115,19 @@ fn parse_config_from_file(path_buf: PathBuf) -> Config {
 
 fn override_config_with_env_vars(config: Config) -> Config {
     let pers = config.persistence;
+    let oidc_back = config.oidc_back;
+    let oidc_front = config.oidc_front;
 
     Config {
+        app_name: env::var(APP_NAME).unwrap_or(config.app_name),
+        oidc_enabled: env::var(OIDC_ENABLED)
+            .map(|p| {
+                p.parse::<bool>()
+                    .expect("Cannot parse the received oidc_enabled")
+            })
+            .ok()
+            .or(Some(config.oidc_enabled))
+            .unwrap(),
         persistence: PersistenceConfig {
             host: env::var(PERSISTENCE_HOST).unwrap_or(pers.host),
             port: env::var(PERSISTENCE_PORT)
@@ -98,6 +154,33 @@ fn override_config_with_env_vars(config: Config) -> Config {
                 })
                 .ok()
                 .or(pers.tls_insecure),
+        },
+        oidc_back: OidcHandler {
+            client_id: env::var(OIDC_CLIENT_ID).unwrap_or(oidc_back.client_id),
+            client_secret: env::var(OIDC_CLIENT_SECRET).unwrap_or(oidc_back.client_secret),
+            issuer: env::var(OIDC_ISSUER).unwrap_or(oidc_back.issuer),
+            redirect_url: env::var(OIDC_REDIRECT_URI).unwrap_or(oidc_back.redirect_url),
+            scopes: env::var(OIDC_SCOPES).unwrap_or(oidc_back.scopes),
+            userinfo_url: env::var(OIDC_USERINFO_URL).unwrap_or(oidc_back.userinfo_url),
+            introspection_url: env::var(OIDC_INTROSPECTION_URL)
+                .unwrap_or(oidc_back.introspection_url),
+            key_id: env::var(OIDC_KEY_ID).unwrap_or(oidc_back.key_id),
+            client_assertion_type: env::var(OIDC_CLIENT_ASSERTION_TYPE)
+                .unwrap_or(oidc_back.client_assertion_type),
+        },
+        oidc_front: OidcFront {
+            redirect_url: env::var(OIDC_FRONT_REDIRECT_URL).unwrap_or(oidc_front.redirect_url),
+            client_id: env::var(OIDC_FRONT_CLIENT_ID).unwrap_or(oidc_front.client_id),
+            token_url: env::var(OIDC_FRONT_TOKEN_URL).unwrap_or(oidc_front.token_url),
+            auth_url: env::var(OIDC_FRONT_AUTH_URL).unwrap_or(oidc_front.auth_url),
+            scopes: env::var(OIDC_FRONT_SCOPES).unwrap_or(oidc_front.scopes),
+            issuer: env::var(OIDC_FRONT_ISSUER).unwrap_or(oidc_front.issuer),
+        },
+        auth: Auth {
+            refresh_token_sign: env::var(AUTH_REFRESH_TOKEN_SIGN)
+                .unwrap_or(config.auth.refresh_token_sign),
+            access_token_sign: env::var(AUTH_ACCESS_TOKEN_SIGN)
+                .unwrap_or(config.auth.access_token_sign),
         },
     }
 }

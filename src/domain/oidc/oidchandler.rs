@@ -9,7 +9,7 @@ pub struct OidcHandler {
     pub client_id: String,
     pub client_secret: String,
     pub issuer: String,
-    pub redirect_uri: String,
+    pub redirect_url: String,
     pub scopes: String,
     pub userinfo_url: String,
     pub introspection_url: String,

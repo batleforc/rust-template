@@ -8,7 +8,7 @@ pub struct OidcFront {
     pub auth_url: String,
     pub issuer: String,
     pub scopes: String,
-    pub redirect_uri: String,
+    pub redirect_url: String,
 }
 
 impl OidcFront {

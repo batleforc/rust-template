@@ -2,14 +2,9 @@ use std::fmt::Display;
 
 use tracing::Instrument;
 
-use crate::domain::token::token::TokenClaims;
+use crate::{config::Config, domain::token::token::TokenClaims};
 
 use super::super::oidc::oidchandler::OidcHandler;
-
-#[derive(Clone)]
-pub struct AuthConfig {
-    oidc: Option<OidcHandler>,
-}
 
 #[derive(Debug, PartialEq)]
 pub enum TokenExtractError {
@@ -33,14 +28,14 @@ pub enum Token {
 }
 
 impl Token {
-    pub async fn get_user_email(&self, auth: AuthConfig) -> Result<String, TokenExtractError> {
+    pub async fn get_user_email(&self, config: Config) -> Result<String, TokenExtractError> {
         let span = tracing::span!(tracing::Level::INFO, "AUTH::get_user_email");
         async move {
             match self {
-                Token::Access(token) => get_user_email_from_token(token.to_string(), false),
-                Token::Refresh(token) => get_user_email_from_token(token.to_string(), true),
+                Token::Access(token) => get_user_email_from_token(token.to_string(), false, config),
+                Token::Refresh(token) => get_user_email_from_token(token.to_string(), true, config),
                 Token::Oidc(token) => {
-                    get_user_email_from_oidc_token(token.to_string(), auth.clone()).await
+                    get_user_email_from_oidc_token(token.to_string(), config).await
                 }
             }
         }
@@ -49,10 +44,14 @@ impl Token {
     }
 }
 
-fn get_user_email_from_token(token: String, refresh: bool) -> Result<String, TokenExtractError> {
+fn get_user_email_from_token(
+    token: String,
+    refresh: bool,
+    config: Config,
+) -> Result<String, TokenExtractError> {
     let span = tracing::span!(tracing::Level::DEBUG, "AUTH::local");
     let _enter = span.enter();
-    let claims = match TokenClaims::validate_token(token, refresh) {
+    let claims = match TokenClaims::validate_token(token, refresh, config.auth.clone()) {
         Ok(c) => c,
         Err(err) => {
             tracing::error!("Invalid token: {}", err);
@@ -65,17 +64,14 @@ fn get_user_email_from_token(token: String, refresh: bool) -> Result<String, Tok
 
 async fn get_user_email_from_oidc_token(
     token: String,
-    auth: AuthConfig,
+    config: Config,
 ) -> Result<String, TokenExtractError> {
     let span = tracing::span!(tracing::Level::DEBUG, "AUTH::oidc");
     async move {
-        let oidc_handler = match auth.oidc {
-            Some(oidc) => oidc,
-            None => {
-                tracing::error!("OIDC disabled");
-                return Err(TokenExtractError::OidcDisabled);
-            }
-        };
+        if !config.oidc_enabled {
+            return Err(TokenExtractError::OidcDisabled);
+        }
+        let oidc_handler = config.oidc_back.clone();
         match oidc_handler.validate_token(token).await {
             Ok((ok, value)) => {
                 tracing::debug!("ok: {}, value: {}", ok, value);

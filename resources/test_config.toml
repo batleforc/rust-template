@@ -1,3 +1,6 @@
+app_name = "Rust_Api_Test"
+oidc_enabled = true
+
 [persistence]
     host = "localhost"
     port = 5433
@@ -6,3 +9,26 @@
     database = "1pNkVsX3FgFeiQdga"
     tls = false
     tls_insecure = false
+
+[oidc_back]
+    client_id = "client_id"
+    client_secret = "client_secret"
+    issuer = "https://accounts.google.com"
+    redirect_url = "http://localhost:8080/auth/callback"
+    scopes = "openid email profile"
+    userinfo_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+    introspection_url = "https://www.googleapis.com/oauth2/v1/tokeninfo"
+    key_id = ""
+    client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+
+[oidc_front]
+    client_id = "client_id"
+    token_url = "https://accounts.google.com/o/oauth2/token"
+    auth_url = "https://accounts.google.com/o/oauth2/auth"
+    scopes = "openid email profile"
+    issuer = "https://accounts.google.com"
+    redirect_url = "http://localhost:8080/auth/callback"
+
+[auth]
+    refresh_token_sign = "RZdpQDPtYhwtO9mDs"
+    access_token_sign = "xj8IBcj0dv2Yfk5tVA"
