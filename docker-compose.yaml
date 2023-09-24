@@ -7,3 +7,10 @@ services:
       POSTGRES_DB: 1pNkVsX3FgFeiQdga
     ports:
       - 5433:5432
+  sonarscanner:
+    container_name: sonarscanner
+    image: harbor.weebo.fr/cache/sonarsource/sonar-scanner-cli:5
+    volumes:
+      - ./:/usr/src
+    command:
+      - -X

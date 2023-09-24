@@ -2,7 +2,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::domain::Entity;
+use crate::{config::Auth, domain::Entity};
+
+use super::token::{self, TokenClaims, TokenError};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct RefreshToken {
@@ -21,6 +23,18 @@ impl RefreshToken {
             email,
             user_id,
             created_at: Utc::now(),
+        }
+    }
+    pub fn create_token(
+        uid: Uuid,
+        email: String,
+        app_name: String,
+        auth_config: Auth,
+    ) -> Result<RefreshToken, TokenError> {
+        let mut token_claim = TokenClaims::new(uid, email.clone(), app_name, true);
+        match token_claim.sign_token(auth_config) {
+            Ok(token) => Ok(RefreshToken::new(token, email, uid)),
+            Err(e) => Err(e),
         }
     }
 }
