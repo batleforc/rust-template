@@ -1,7 +1,10 @@
 use crate::{
     config::Config,
     domain::{
-        token::refresh_token::{self, RefreshToken},
+        token::{
+            create::create_refresh_token,
+            refresh_token::{self, RefreshToken},
+        },
         user::user::User,
     },
     driven::repository::{
@@ -101,26 +104,11 @@ pub async fn login<
                 token: "".to_string(),
             });
         }
-        let token = match RefreshToken::create_token(
-            user.id.clone(),
-            user.email.clone(),
-            config.app_name.to_string(),
-            config.auth.clone(),
-        ) {
-            Ok(refresh_token) => match repo_token.create(refresh_token.clone()).await {
-                Ok(_) => {
-                    tracing::info!(email = email.to_string(), "Refresh token created");
-                    refresh_token.token
-                }
-                Err(err) => {
-                    tracing::error!(
-                        email = email.to_string(),
-                        err = err.to_string(),
-                        "Error will creating refresh token"
-                    );
-                    return Err(LoginError::ServerError(err.to_string()));
-                }
-            },
+        let token = match create_refresh_token(repo_token, &user, config).await {
+            Ok(token) => {
+                tracing::info!(email = email.to_string(), "Refresh token created");
+                token
+            }
             Err(err) => {
                 tracing::error!(
                     email = email.to_string(),
