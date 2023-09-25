@@ -50,6 +50,14 @@ impl TokenClaims {
             refresh,
         }
     }
+    pub fn to_access_token(&self) -> Self {
+        Self {
+            iat: chrono::Utc::now().timestamp() as usize,
+            exp: chrono::Utc::now().timestamp() as usize + 3600,
+            refresh: false,
+            ..self.clone()
+        }
+    }
     fn gen_header(refresh: bool) -> Header {
         let kid = match refresh {
             true => "refresh_token",
