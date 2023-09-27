@@ -5,7 +5,7 @@
 
 ## Auth
 
-### Login
+### Login : DONE
 
 INPUT: username, password
 
@@ -17,7 +17,7 @@ ERROR:
 - User is Oauth user
 - Server error
 
-### Logout
+### Logout : DONE
 
 INPUT: refresh_token
 
@@ -28,7 +28,18 @@ ERROR:
 - Invalid refresh token
 - Server error
 
-### Refresh
+### Logout Oauth2
+
+INPUT: refresh_token
+
+OUTPUT: (None)
+
+ERROR:
+
+- Invalid refresh token
+- Server error
+
+### Refresh : DONE
 
 INPUT: refresh_token
 
