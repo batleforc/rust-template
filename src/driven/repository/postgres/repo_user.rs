@@ -138,21 +138,29 @@ impl Repository<User, SearchUser, ConfigPG> for UserPGRepo {
                 param.push(i as &(dyn ToSql + Sync));
             }
             match client
-                .query_one(
+                .query_opt(
                     &format!("SELECT * FROM users WHERE {}", search_querry),
                     &param,
                 )
                 .await
             {
-                Ok(row) => {
-                    tracing::trace!("Got row");
-                    let user = UserPG::from_row(&row);
-                    drop(client);
-                    Ok(user.try_into().unwrap())
-                }
+                Ok(row) => match row {
+                    Some(row) => {
+                        tracing::trace!("Got row");
+                        let user = UserPG::from_row(&row);
+                        drop(client);
+                        Ok(user.try_into().unwrap())
+                    }
+                    None => {
+                        drop(client);
+                        tracing::error!("User not found");
+                        return Err(RepoSelectError::NoRowFound);
+                    }
+                },
                 Err(e) => {
                     tracing::error!("Error finding user: {}", e);
                     drop(client);
+
                     Err(RepoSelectError::Unknown(e.to_string()))
                 }
             }

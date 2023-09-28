@@ -28,17 +28,6 @@ ERROR:
 - Invalid refresh token
 - Server error
 
-### Logout Oauth2
-
-INPUT: refresh_token
-
-OUTPUT: (None)
-
-ERROR:
-
-- Invalid refresh token
-- Server error
-
 ### Refresh : DONE
 
 INPUT: refresh_token
@@ -49,6 +38,19 @@ ERROR:
 
 - Invalid refresh token
 - Server error
+
+### LoginOauth
+
+INPUT: OIDC_token
+
+OUTPUT: (User)
+
+ERROR:
+
+- Invalid OIDC_token
+- OIDC not enabled
+- Server error
+- (This endpoint is called each time a user login with OIDC to update the user information so no user already exist error)
 
 ## Auth/Register
 
@@ -63,19 +65,6 @@ ERROR:
 - Invalid Parameter
 - User already exist
 - Server error
-
-### RegisterOauth
-
-INPUT: OIDC_token
-
-OUTPUT: (User)
-
-ERROR:
-
-- Invalid OIDC_token
-- OIDC not enabled
-- Server error
-- (This endpoint is called each time a user login with OIDC to update the user information so no user already exist error)
 
 ## Auth/OTP
 

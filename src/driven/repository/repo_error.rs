@@ -18,6 +18,7 @@ impl Display for RepoCreateError {
 #[derive(Debug)]
 pub enum RepoSelectError {
     SelectParamInvalid(String),
+    NoRowFound,
     Unknown(String),
 }
 
@@ -26,6 +27,7 @@ impl Display for RepoSelectError {
         match self {
             RepoSelectError::SelectParamInvalid(msg) => write!(f, "SelectParamInvalid: {}", msg),
             RepoSelectError::Unknown(msg) => write!(f, "Unknown: {}", msg),
+            RepoSelectError::NoRowFound => write!(f, "NoRowFound"),
         }
     }
 }
