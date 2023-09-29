@@ -90,9 +90,81 @@ pub async fn login_oidc<'a, B: PersistenceConfig, T: Repository<User, SearchUser
                 }
             }
         };
+        match create {
+            true => {
+                tracing::info!(
+                    email = user_info["email"].to_string().replace('\"', ""),
+                    "Creating user"
+                );
 
-        // return user
-        Err(LoginOidcError::ServerError("Not implemented".to_string()))
+                let new_user = User::new(
+                    user_info["email"].to_string().replace('\"', ""),
+                    user_info["family_name"].to_string().replace('\"', ""),
+                    user_info["given_name"].to_string().replace('\"', ""),
+                    true,
+                );
+                // Create user in db
+                match repo_user.create(new_user.clone()).await {
+                    Ok(user) => {
+                        tracing::info!(
+                            email = user_info["email"].to_string().replace('\"', ""),
+                            "User created"
+                        );
+                        return Ok(user);
+                    }
+                    Err(err) => {
+                        tracing::error!(
+                            email = user_info["email"].to_string().replace('\"', ""),
+                            err = err.to_string(),
+                            "Error while creating user"
+                        );
+                        return Err(LoginOidcError::ServerError(err.to_string()));
+                    }
+                }
+            }
+            false => {
+                tracing::info!(
+                    email = user_info["email"].to_string().replace('\"', ""),
+                    "Updating user"
+                );
+                let mut need_update = false;
+                let mut in_db_user = user.unwrap();
+                // define if user value has changed
+                let user_given_name = user_info["given_name"].to_string().replace('\"', "");
+                if user_given_name != in_db_user.surname {
+                    tracing::debug!(name = user_given_name.clone(), "Updating user name");
+                    in_db_user.name = user_given_name;
+                    need_update = true;
+                }
+                let user_familly_name = user_info["family_name"].to_string().replace('\"', "");
+                if user_familly_name != in_db_user.name {
+                    tracing::debug!(surname = user_familly_name.clone(), "Updating user surname");
+                    in_db_user.surname = user_familly_name;
+                    need_update = true;
+                }
+                if need_update {
+                    tracing::info!("User need update");
+                    match repo_user.update(in_db_user).await {
+                        Ok(user) => {
+                            tracing::info!(
+                                email = user_info["email"].to_string().replace('\"', ""),
+                                "User updated"
+                            );
+                            return Ok(user);
+                        }
+                        Err(err) => {
+                            tracing::error!(
+                                email = user_info["email"].to_string().replace('\"', ""),
+                                err = err.to_string(),
+                                "Error while updating user"
+                            );
+                            return Err(LoginOidcError::ServerError(err.to_string()));
+                        }
+                    };
+                }
+                return Ok(in_db_user);
+            }
+        }
     }
     .instrument(span)
     .await
