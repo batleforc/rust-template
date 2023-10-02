@@ -103,7 +103,6 @@ pub async fn login_oidc<'a, B: PersistenceConfig, T: Repository<User, SearchUser
                     user_info["given_name"].to_string().replace('\"', ""),
                     true,
                 );
-                // Create user in db
                 match repo_user.create(new_user.clone()).await {
                     Ok(user) => {
                         tracing::info!(
@@ -129,7 +128,6 @@ pub async fn login_oidc<'a, B: PersistenceConfig, T: Repository<User, SearchUser
                 );
                 let mut need_update = false;
                 let mut in_db_user = user.unwrap();
-                // define if user value has changed
                 let user_given_name = user_info["given_name"].to_string().replace('\"', "");
                 if user_given_name != in_db_user.surname {
                     tracing::debug!(name = user_given_name.clone(), "Updating user name");

@@ -39,7 +39,7 @@ ERROR:
 - Invalid refresh token
 - Server error
 
-### LoginOauth
+### LoginOauth : DONE
 
 INPUT: OIDC_token
 
@@ -54,7 +54,7 @@ ERROR:
 
 ## Auth/Register
 
-### Register
+### Register : Done
 
 INPUT: surname, name, password, email
 
