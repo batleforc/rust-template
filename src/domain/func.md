@@ -66,7 +66,7 @@ ERROR:
 - User already exist
 - Server error
 
-## Auth/OTP
+## Auth/OTP : FLEMMEEE ATM
 
 ### GenerateOTP
 
