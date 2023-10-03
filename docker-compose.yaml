@@ -1,3 +1,6 @@
+include:
+  - ./tracing/compose.yaml
+
 services:
   db-test:
     image: postgres:15
@@ -7,6 +10,14 @@ services:
       POSTGRES_DB: 1pNkVsX3FgFeiQdga
     ports:
       - 5433:5432
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - 5432:5432
   sonarscanner:
     container_name: sonarscanner
     image: harbor.weebo.fr/cache/sonarsource/sonar-scanner-cli:5

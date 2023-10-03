@@ -1,0 +1,21 @@
+version: "3"
+
+tasks:
+  hook-install:
+    cmds:
+      - cog install-hook --all
+  changelog:
+    cmds:
+      - cog changelog
+  commit-msg:
+    cmds:
+      - cog verify --file {{.CLI_ARGS}}
+  up-trace:
+    cmds:
+      - docker compose up tempo prometheus grafana -d
+  down-trace:
+    cmds:
+      - docker compose down tempo prometheus grafana
+  gen-trace:
+    cmds:
+      - docker compose up k6-tracing -d
